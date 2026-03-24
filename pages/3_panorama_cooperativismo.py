@@ -1,7 +1,6 @@
 """Pagina 3 - Panorama do Cooperativismo de Credito."""
 
 import streamlit as st
-from datetime import datetime, timedelta
 
 from src.api.bcb import buscar_serie_sgs
 from src.utils.constants import SGS, CORES
@@ -12,17 +11,15 @@ from src.components.charts import grafico_linha, grafico_linhas_multiplas
 st.header("Panorama do Cooperativismo de Credito")
 st.markdown("Evolucao do setor cooperativista de credito no Brasil com dados do Banco Central.")
 
-# === Periodo ===
-data_inicio = (datetime.now() - timedelta(days=365 * 5)).strftime("%d/%m/%Y")
-data_fim = datetime.now().strftime("%d/%m/%Y")
-
 # === Carregar dados ===
-df_qtd = buscar_serie_sgs(SGS["COOP_QTD"], data_inicio, data_fim)
-df_cred_pf = buscar_serie_sgs(SGS["COOP_CREDITO_PF"], data_inicio, data_fim)
-df_cred_pj = buscar_serie_sgs(SGS["COOP_CREDITO_PJ"], data_inicio, data_fim)
-df_dep_pf = buscar_serie_sgs(SGS["COOP_DEPOSITOS_PF"], data_inicio, data_fim)
-df_central = buscar_serie_sgs(SGS["COOP_CENTRAL"], data_inicio, data_fim)
-df_singular = buscar_serie_sgs(SGS["COOP_SINGULAR"], data_inicio, data_fim)
+# Series de cooperativismo sao anuais com dados historicos limitados (ate 2018/2022).
+# Carregar sem filtro de data para exibir todo o historico disponivel.
+df_qtd = buscar_serie_sgs(SGS["COOP_QTD"])
+df_cred_pf = buscar_serie_sgs(SGS["COOP_CREDITO_PF"])
+df_cred_pj = buscar_serie_sgs(SGS["COOP_CREDITO_PJ"])
+df_dep_pf = buscar_serie_sgs(SGS["COOP_DEPOSITOS_PF"])
+df_central = buscar_serie_sgs(SGS["COOP_CENTRAL"])
+df_singular = buscar_serie_sgs(SGS["COOP_SINGULAR"])
 
 # === KPIs ===
 kpis = []
