@@ -1,0 +1,27 @@
+name: Atualizar Dados
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Segunda-feira 6h UTC
+  workflow_dispatch:       # Trigger manual
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install requests pandas
+
+      - name: Executar script de atualizacao
+        run: python scripts/atualizar_dados.py
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "dados: atualizar cache semanal"
+          file_pattern: "data/**"
