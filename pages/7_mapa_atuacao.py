@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 
 from src.api.bcb import buscar_sedes_cooperativas, buscar_instituicoes_funcionamento
-from src.utils.constants import CORES, TRANSPOCRED_NOME
+from src.utils.constants import CORES, TRANSPOCRED_NOME, TODAS_UFS
 from src.utils.formatting import formatar_numero
 from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_mapa_brasil, grafico_barras
@@ -87,6 +87,11 @@ if not df_sedes.empty:
     # === Mapa ===
     if col_uf:
         df_por_uf = df_filtrado.groupby(col_uf).size().reset_index(name="Quantidade")
+
+        # Garantir que todas as 27 UFs apareçam no mapa (0 para estados sem cooperativas)
+        df_todas_ufs = pd.DataFrame({col_uf: TODAS_UFS})
+        df_por_uf = df_todas_ufs.merge(df_por_uf, on=col_uf, how="left").fillna(0)
+        df_por_uf["Quantidade"] = df_por_uf["Quantidade"].astype(int)
 
         col1, col2 = st.columns([2, 1])
 
