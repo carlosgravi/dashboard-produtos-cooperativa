@@ -53,16 +53,22 @@ with tab_credito:
     with col1:
         st.markdown("**Credito Pessoa Fisica**")
         if not df_cred_pf.empty:
-            total_pf = extrair_valor(df_cred_pf, "Total")
+            total_pf = extrair_valor(df_cred_pf, "Total da Carteira")
             if total_pf is not None:
                 st.metric("Total Credito PF", formatar_bilhoes(total_pf * 1000))
 
-            df_modalidades_pf = extrair_contas(df_cred_pf, top_n=10)
-            df_modalidades_pf = df_modalidades_pf[df_modalidades_pf["Valor"] > 0]
-            if not df_modalidades_pf.empty:
+            # Mostrar totais por modalidade (Grupo)
+            df_mod_pf = df_cred_pf[df_cred_pf["NomeConta"] == "Total"].copy()
+            df_mod_pf["Valor"] = pd.to_numeric(df_mod_pf["Valor"], errors="coerce")
+            df_mod_pf = df_mod_pf.dropna(subset=["Valor"])
+            df_mod_pf = df_mod_pf[df_mod_pf["Valor"] > 0]
+            if "Grupo" in df_mod_pf.columns:
+                df_mod_pf = df_mod_pf[["Grupo", "Valor"]].rename(columns={"Grupo": "NomeConta"})
+            if not df_mod_pf.empty:
                 fig = grafico_barras(
-                    df_modalidades_pf, x="NomeConta", y="Valor",
-                    titulo="Principais Modalidades PF (R$ mil)",
+                    df_mod_pf.sort_values("Valor", ascending=False),
+                    x="NomeConta", y="Valor",
+                    titulo="Credito PF por Modalidade (R$ mil)",
                     cor=CORES["verde_ailos"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -72,16 +78,22 @@ with tab_credito:
     with col2:
         st.markdown("**Credito Pessoa Juridica**")
         if not df_cred_pj.empty:
-            total_pj = extrair_valor(df_cred_pj, "Total")
+            total_pj = extrair_valor(df_cred_pj, "Total da Carteira")
             if total_pj is not None:
                 st.metric("Total Credito PJ", formatar_bilhoes(total_pj * 1000))
 
-            df_modalidades_pj = extrair_contas(df_cred_pj, top_n=10)
-            df_modalidades_pj = df_modalidades_pj[df_modalidades_pj["Valor"] > 0]
-            if not df_modalidades_pj.empty:
+            # Mostrar totais por modalidade (Grupo)
+            df_mod_pj = df_cred_pj[df_cred_pj["NomeConta"] == "Total"].copy()
+            df_mod_pj["Valor"] = pd.to_numeric(df_mod_pj["Valor"], errors="coerce")
+            df_mod_pj = df_mod_pj.dropna(subset=["Valor"])
+            df_mod_pj = df_mod_pj[df_mod_pj["Valor"] > 0]
+            if "Grupo" in df_mod_pj.columns:
+                df_mod_pj = df_mod_pj[["Grupo", "Valor"]].rename(columns={"Grupo": "NomeConta"})
+            if not df_mod_pj.empty:
                 fig = grafico_barras(
-                    df_modalidades_pj, x="NomeConta", y="Valor",
-                    titulo="Principais Modalidades PJ (R$ mil)",
+                    df_mod_pj.sort_values("Valor", ascending=False),
+                    x="NomeConta", y="Valor",
+                    titulo="Credito PJ por Modalidade (R$ mil)",
                     cor=CORES["azul"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -117,6 +129,16 @@ with tab_captacao:
             fig = grafico_pizza(
                 df_comp, valores="Valor", nomes="NomeConta",
                 titulo="Composicao da Captacao",
+            )
+            fig.update_layout(
+                legend=dict(
+                    orientation="h",
+                    yanchor="top",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                ),
+                margin=dict(b=100),
             )
             st.plotly_chart(fig, use_container_width=True)
     else:
@@ -174,13 +196,14 @@ with tab_inadimplencia:
         """Extrai total da carteira e vencido >15 dias."""
         if df.empty or "NomeConta" not in df.columns:
             return None, None, None
+        df = df.copy()
         df["Valor"] = pd.to_numeric(df["Valor"], errors="coerce")
+        # Total da carteira: linha com Grupo=None e "Total da Carteira" no nome
+        total = df[df["NomeConta"].str.contains("Total da Carteira", case=False, na=False)]
+        val_total = total["Valor"].dropna().iloc[0] if not total.empty and total["Valor"].dropna().any() else 0
+        # Vencido: somar "Vencido a Partir de 15 Dias" de todos os grupos
         vencido = df[df["NomeConta"].str.contains("Vencido", case=False, na=False)]
-        total = df[df["NomeConta"].str.contains(f"Total da Carteira {label}", case=False, na=False)]
-        if total.empty:
-            total = df[df["NomeConta"].str.contains("Total", case=False, na=False)]
-        val_vencido = vencido["Valor"].sum() if not vencido.empty else 0
-        val_total = total["Valor"].iloc[0] if not total.empty else 0
+        val_vencido = vencido["Valor"].dropna().sum() if not vencido.empty else 0
         taxa = (val_vencido / val_total * 100) if val_total > 0 else 0
         return val_vencido, val_total, taxa
 
