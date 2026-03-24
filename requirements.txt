@@ -5,3 +5,6 @@ requests>=2.31.0
 httpx>=0.25.0
 lxml>=5.1.0
 openpyxl>=3.1.0
+basedosdados>=2.0.0
+folium>=0.15.0
+streamlit-folium>=0.18.0

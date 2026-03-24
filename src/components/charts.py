@@ -145,3 +145,50 @@ def grafico_mapa_brasil(df, coluna_uf, coluna_valor, titulo=None, altura=500, co
     layout["margin"] = dict(l=0, r=0, t=50, b=0)
     fig.update_layout(**layout)
     return fig
+
+
+def grafico_scatter_mapa_brasil(df, coluna_lat, coluna_lon, coluna_tamanho,
+                                 coluna_cor=None, coluna_hover=None,
+                                 titulo=None, altura=600):
+    """Mapa scatter do Brasil com pontos por coordenada.
+
+    Args:
+        df: DataFrame com dados georreferenciados
+        coluna_lat: Nome da coluna de latitude
+        coluna_lon: Nome da coluna de longitude
+        coluna_tamanho: Nome da coluna para tamanho dos pontos
+        coluna_cor: Nome da coluna para cor (categoria)
+        coluna_hover: Nome da coluna para hover label
+        titulo: Titulo do grafico
+        altura: Altura em pixels
+    """
+    kwargs = dict(
+        lat=coluna_lat,
+        lon=coluna_lon,
+        size=coluna_tamanho,
+        scope="south america",
+        size_max=40,
+    )
+    if coluna_cor:
+        kwargs["color"] = coluna_cor
+        kwargs["color_discrete_sequence"] = PALETA_SEQUENCIAL
+    else:
+        kwargs["color_discrete_sequence"] = [CORES["verde_ailos"]]
+    if coluna_hover:
+        kwargs["hover_name"] = coluna_hover
+
+    fig = px.scatter_geo(df, **kwargs)
+
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False,
+        bgcolor="white",
+    )
+
+    layout = dict(LAYOUT_PADRAO)
+    if titulo:
+        layout["title"] = dict(text=titulo, x=0.5, xanchor="center")
+    layout["height"] = altura
+    layout["margin"] = dict(l=0, r=0, t=50, b=0)
+    fig.update_layout(**layout)
+    return fig

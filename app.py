@@ -23,6 +23,7 @@ paginas = {
     "Setor": [
         st.Page("pages/6_setor_transportes.py", title="Setor de Transportes", icon="🚛"),
         st.Page("pages/7_mapa_atuacao.py", title="Mapa de Atuação", icon="🗺️"),
+        st.Page("pages/8_mapa_empresas.py", title="Mapa de Empresas", icon="📍"),
     ],
 }
 
@@ -41,6 +42,6 @@ with st.sidebar:
         """
     )
     st.markdown("---")
-    st.caption("Dados públicos | BCB, ANTT, ANP")
+    st.caption("Dados públicos | BCB, ANTT, ANP, RFB")
 
 nav.run()

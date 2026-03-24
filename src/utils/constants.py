@@ -126,3 +126,61 @@ TODAS_UFS = [
     "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN",
     "RO", "RR", "RS", "SC", "SE", "SP", "TO",
 ]
+
+# === CNAEs de transporte/logística/correios ===
+CNAES_TRANSPORTE = {
+    # Transporte rodoviário de cargas
+    "4930201": "Transporte rodoviário de carga municipal",
+    "4930202": "Transporte rodoviário de carga intermunicipal/interestadual",
+    "4930203": "Transporte rodoviário de produtos perigosos",
+    "4930204": "Transporte rodoviário de mudanças",
+    # Transporte rodoviário de passageiros
+    "4921301": "Transporte coletivo municipal",
+    "4921302": "Transporte coletivo metropolitano",
+    "4922101": "Transporte coletivo intermunicipal",
+    "4922102": "Transporte coletivo interestadual",
+    "4929901": "Fretamento municipal",
+    "4929902": "Fretamento intermunicipal/interestadual",
+    "4929999": "Outros transportes rodoviários de passageiros",
+    # Logística e operadores
+    "5250801": "Comissaria de despachos",
+    "5250803": "Agenciamento de cargas",
+    "5250804": "Organização logística do transporte de carga",
+    "5250805": "Operador de transporte multimodal",
+    # Armazéns
+    "5211701": "Armazéns gerais",
+    "5211799": "Depósitos de mercadorias para terceiros",
+    "5212500": "Carga e descarga",
+    # Correios e entregas
+    "5310501": "Correio Nacional (ECT)",
+    "5310502": "Franqueadas do Correio Nacional",
+    "5320201": "Serviços de malote",
+    "5320202": "Serviços de entrega rápida (courier)",
+}
+
+# Categorias agrupadas por CNAE
+CATEGORIAS_EMPRESAS = {
+    "Transporte de Cargas": ["4930201", "4930202", "4930203", "4930204"],
+    "Transporte de Passageiros": ["4921301", "4921302", "4922101", "4922102", "4929901", "4929902", "4929999"],
+    "Logística": ["5250801", "5250803", "5250804", "5250805"],
+    "Armazéns": ["5211701", "5211799", "5212500"],
+    "Correios e Entregas": ["5310501", "5310502", "5320201", "5320202"],
+}
+
+# === Cores por categoria para mapa ===
+CORES_CATEGORIAS_MAPA = {
+    "Transporte de Cargas": "blue",
+    "Transporte de Passageiros": "green",
+    "Logística": "orange",
+    "Armazéns": "purple",
+    "Correios e Entregas": "red",
+}
+
+# === Nominatim (OpenStreetMap) - geocodificação por endereço completo ===
+NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search"
+
+# === AwesomeAPI CEP ===
+AWESOMEAPI_CEP_URL = "https://cep.awesomeapi.com.br/json/{cep}"
+
+# === IBGE Municípios (coordenadas) ===
+IBGE_MUNICIPIOS_URL = "https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/csv/municipios.csv"

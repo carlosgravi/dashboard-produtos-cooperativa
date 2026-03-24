@@ -1,0 +1,148 @@
+"""API para carregar dados de empresas de transporte/logística/correios."""
+
+import json
+import os
+
+import pandas as pd
+import streamlit as st
+
+from src.utils.constants import CATEGORIAS_EMPRESAS
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "empresas")
+UF_DIR = os.path.join(DATA_DIR, "uf")
+
+
+def _carregar_json(arquivo):
+    """Carrega arquivo JSON do diretório de dados."""
+    caminho = os.path.join(DATA_DIR, arquivo)
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+@st.cache_data(ttl=86400)
+def carregar_resumo_por_municipio():
+    """Carrega resumo de empresas por município com coordenadas.
+
+    Este é o arquivo principal para o mapa - dados agregados, leve.
+    """
+    dados = _carregar_json("resumo_por_municipio.json")
+    if dados:
+        return pd.DataFrame(dados)
+    return pd.DataFrame()
+
+
+@st.cache_data(ttl=86400)
+def carregar_resumo_por_uf():
+    """Carrega resumo de empresas por UF."""
+    dados = _carregar_json("resumo_por_uf.json")
+    if dados:
+        return pd.DataFrame(dados)
+    return pd.DataFrame()
+
+
+@st.cache_data(ttl=86400)
+def carregar_resumo_por_cnae():
+    """Carrega resumo de empresas por CNAE."""
+    dados = _carregar_json("resumo_por_cnae.json")
+    if dados:
+        return pd.DataFrame(dados)
+    return pd.DataFrame()
+
+
+@st.cache_data(ttl=86400)
+def resumo_empresas_por_categoria():
+    """Retorna contagem por categoria (transporte cargas, passageiros, etc.)."""
+    df = carregar_resumo_por_cnae()
+    if df.empty:
+        return pd.DataFrame()
+    if "categoria" in df.columns and "total" in df.columns:
+        return df.groupby("categoria")["total"].sum().reset_index().sort_values(
+            "total", ascending=False
+        )
+    return pd.DataFrame()
+
+
+def filtrar_municipios(df, categoria=None, uf=None, fonte=None):
+    """Filtra DataFrame de municípios por categoria, UF e fonte."""
+    if df.empty:
+        return df
+
+    df_filtrado = df.copy()
+
+    if uf and uf != "Todas":
+        df_filtrado = df_filtrado[df_filtrado["uf"] == uf]
+
+    # Se filtrar por categoria, usar a coluna específica como total
+    if categoria and categoria != "Todas":
+        col_cat = categoria.lower().replace(" ", "_").replace("ã", "a").replace("í", "i")
+        if col_cat in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado[col_cat] > 0].copy()
+            df_filtrado["total_filtrado"] = df_filtrado[col_cat]
+        else:
+            df_filtrado["total_filtrado"] = df_filtrado.get("total", 0)
+    else:
+        df_filtrado["total_filtrado"] = df_filtrado.get("total", 0)
+
+    # Filtrar por fonte
+    if fonte and fonte != "Todas":
+        col_fonte = f"fonte_{fonte.lower()}"
+        if col_fonte in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado[col_fonte] > 0].copy()
+
+    return df_filtrado
+
+
+# ============================================================
+# Empresas individuais por UF
+# ============================================================
+
+@st.cache_data(ttl=86400)
+def listar_ufs_com_dados_individuais():
+    """Lista UFs que possuem data/empresas/uf/{UF}.json."""
+    if not os.path.isdir(UF_DIR):
+        return []
+    ufs = []
+    for f in os.listdir(UF_DIR):
+        if f.endswith(".json") and len(f) == 7:  # "SC.json" = 7 chars
+            ufs.append(f.replace(".json", ""))
+    return sorted(ufs)
+
+
+@st.cache_data(ttl=86400)
+def carregar_empresas_uf(uf):
+    """Carrega empresas individuais de uma UF. Retorna DataFrame."""
+    caminho = os.path.join(UF_DIR, f"{uf}.json")
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+        if dados:
+            return pd.DataFrame(dados)
+    return pd.DataFrame()
+
+
+def filtrar_empresas_individuais(df, categoria=None, municipio=None, busca=None):
+    """Filtra empresas individuais por categoria, município ou texto (nome/CNPJ/endereço)."""
+    if df.empty:
+        return df
+
+    df_f = df.copy()
+
+    if categoria and categoria != "Todas":
+        df_f = df_f[df_f["categoria"] == categoria]
+
+    if municipio and municipio != "Todos":
+        df_f = df_f[df_f["municipio"] == municipio]
+
+    if busca:
+        busca = busca.strip()
+        if busca:
+            mask = (
+                df_f["nome"].astype(str).str.contains(busca, case=False, na=False)
+                | df_f["cnpj"].astype(str).str.contains(busca, case=False, na=False)
+                | df_f["endereco"].astype(str).str.contains(busca, case=False, na=False)
+            )
+            df_f = df_f[mask]
+
+    return df_f

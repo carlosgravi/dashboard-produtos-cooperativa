@@ -179,7 +179,8 @@ def buscar_ifdata_valores(relatorio, data_base=None, cnpj_8=None, tipo_instituic
         if not registros:
             return pd.DataFrame()
         df = pd.DataFrame(registros)
-        # Normalizar: a API retorna "Saldo", renomear para "Valor" para uso interno        if "Saldo" in df.columns:
+        # Normalizar: a API retorna "Saldo", renomear para "Valor" para uso interno
+        if "Saldo" in df.columns:
             df["Valor"] = pd.to_numeric(df["Saldo"], errors="coerce")
         # Normalizar nome da conta: "NomeColuna" tem nomes legíveis (ex: "Ativo Total")
         if "NomeConta" not in df.columns:
