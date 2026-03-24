@@ -1,4 +1,4 @@
-"""Pagina 7 - Mapa de Atuacao: Cooperativas por UF."""
+"""Página 7 - Mapa de Atuação: Cooperativas por UF."""
 
 import streamlit as st
 import pandas as pd
@@ -9,14 +9,14 @@ from src.utils.formatting import formatar_numero
 from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_mapa_brasil, grafico_barras
 
-st.header("Mapa de Atuacao")
-st.markdown("Distribuicao geografica das cooperativas de credito no Brasil.")
+st.header("Mapa de Atuação")
+st.markdown("Distribuição geográfica das cooperativas de crédito no Brasil.")
 
 # === Carregar dados ===
 df_sedes = buscar_sedes_cooperativas()
 
 if not df_sedes.empty:
-    # === Identificar colunas disponiveis ===
+    # === Identificar colunas disponíveis ===
     col_uf = "UF" if "UF" in df_sedes.columns else None
     col_classe = None
     col_tipo = None
@@ -37,7 +37,7 @@ if not df_sedes.empty:
         if "nomeentidade" in col_lower or "razao" in col_lower:
             col_nome = col
 
-    # Fallback para deteccao generica
+    # Fallback para detecção genérica
     if col_uf is None:
         for col in df_sedes.columns:
             col_lower = col.lower()
@@ -98,7 +98,7 @@ if not df_sedes.empty:
         with col1:
             fig = grafico_mapa_brasil(
                 df_por_uf, coluna_uf=col_uf, coluna_valor="Quantidade",
-                titulo="Cooperativas de Credito por UF",
+                titulo="Cooperativas de Crédito por UF",
             )
             if fig:
                 st.plotly_chart(fig, use_container_width=True)
@@ -123,16 +123,16 @@ if not df_sedes.empty:
         )
         st.plotly_chart(fig_barras, use_container_width=True)
     else:
-        st.warning("Coluna de UF nao identificada nos dados.")
+        st.warning("Coluna de UF não identificada nos dados.")
         st.dataframe(df_filtrado.head(20), use_container_width=True)
 else:
-    # Fallback: tentar com instituicoes em funcionamento
-    st.warning("Dados de cooperativas nao disponiveis. Tentando fonte alternativa...")
+    # Fallback: tentar com instituições em funcionamento
+    st.warning("Dados de cooperativas não disponíveis. Tentando fonte alternativa...")
 
     df_inst = buscar_instituicoes_funcionamento()
 
     if not df_inst.empty:
-        st.info(f"Carregadas {len(df_inst)} instituicoes. Filtrando cooperativas...")
+        st.info(f"Carregadas {len(df_inst)} instituições. Filtrando cooperativas...")
 
         mask_coop = df_inst.apply(
             lambda row: any("cooperativa" in str(v).lower() for v in row.values), axis=1
@@ -145,7 +145,7 @@ else:
         else:
             st.info("Nenhuma cooperativa encontrada com os filtros aplicados.")
     else:
-        st.error("Nao foi possivel carregar dados de cooperativas de nenhuma fonte.")
+        st.error("Não foi possível carregar dados de cooperativas de nenhuma fonte.")
 
 st.markdown("---")
 st.caption("Fonte: Banco Central do Brasil - BcBase v2 / Cadastro de Cooperativas")

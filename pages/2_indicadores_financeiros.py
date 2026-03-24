@@ -1,4 +1,4 @@
-"""Pagina 2 - Indicadores Financeiros da Transpocred."""
+"""Página 2 - Indicadores Financeiros da Transpocred."""
 
 import streamlit as st
 import pandas as pd
@@ -10,7 +10,7 @@ from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_barras, grafico_pizza, grafico_barras_agrupadas
 
 st.header(f"Indicadores Financeiros - {TRANSPOCRED_NOME}")
-st.markdown("Detalhamento das operacoes de credito, captacao, resultado e inadimplencia.")
+st.markdown("Detalhamento das operações de crédito, captação, resultado e inadimplência.")
 
 
 def extrair_valor(df, nome_conta):
@@ -38,12 +38,12 @@ def extrair_contas(df, filtro=None, top_n=None):
 
 # === Tabs ===
 tab_credito, tab_captacao, tab_resultado, tab_inadimplencia = st.tabs(
-    ["Credito", "Captacao", "Resultado", "Inadimplencia"]
+    ["Crédito", "Captação", "Resultado", "Inadimplência"]
 )
 
-# === Tab Credito ===
+# === Tab Crédito ===
 with tab_credito:
-    st.subheader("Operacoes de Credito")
+    st.subheader("Operações de Crédito")
 
     df_cred_pf = buscar_ifdata_transpocred(IFDATA_RELATORIOS["CREDITO_PF"])
     df_cred_pj = buscar_ifdata_transpocred(IFDATA_RELATORIOS["CREDITO_PJ"])
@@ -51,11 +51,11 @@ with tab_credito:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("**Credito Pessoa Fisica**")
+        st.markdown("**Crédito Pessoa Física**")
         if not df_cred_pf.empty:
             total_pf = extrair_valor(df_cred_pf, "Total da Carteira")
             if total_pf is not None:
-                st.metric("Total Credito PF", formatar_bilhoes(total_pf * 1000))
+                st.metric("Total Crédito PF", formatar_bilhoes(total_pf * 1000))
 
             # Mostrar totais por modalidade (Grupo)
             df_mod_pf = df_cred_pf[df_cred_pf["NomeConta"] == "Total"].copy()
@@ -68,19 +68,19 @@ with tab_credito:
                 fig = grafico_barras(
                     df_mod_pf.sort_values("Valor", ascending=False),
                     x="NomeConta", y="Valor",
-                    titulo="Credito PF por Modalidade (R$ mil)",
+                    titulo="Crédito PF por Modalidade (R$ mil)",
                     cor=CORES["verde_ailos"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Dados de credito PF nao disponiveis.")
+            st.info("Dados de crédito PF não disponíveis.")
 
     with col2:
-        st.markdown("**Credito Pessoa Juridica**")
+        st.markdown("**Crédito Pessoa Jurídica**")
         if not df_cred_pj.empty:
             total_pj = extrair_valor(df_cred_pj, "Total da Carteira")
             if total_pj is not None:
-                st.metric("Total Credito PJ", formatar_bilhoes(total_pj * 1000))
+                st.metric("Total Crédito PJ", formatar_bilhoes(total_pj * 1000))
 
             # Mostrar totais por modalidade (Grupo)
             df_mod_pj = df_cred_pj[df_cred_pj["NomeConta"] == "Total"].copy()
@@ -93,42 +93,42 @@ with tab_credito:
                 fig = grafico_barras(
                     df_mod_pj.sort_values("Valor", ascending=False),
                     x="NomeConta", y="Valor",
-                    titulo="Credito PJ por Modalidade (R$ mil)",
+                    titulo="Crédito PJ por Modalidade (R$ mil)",
                     cor=CORES["azul"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Dados de credito PJ nao disponiveis.")
+            st.info("Dados de crédito PJ não disponíveis.")
 
-# === Tab Captacao ===
+# === Tab Captação ===
 with tab_captacao:
-    st.subheader("Captacao de Recursos")
+    st.subheader("Captação de Recursos")
 
     df_captacao = buscar_ifdata_transpocred(IFDATA_RELATORIOS["PASSIVO"])
 
     if not df_captacao.empty:
-        # KPIs de captacao
+        # KPIs de captação
         dep_vista = extrair_valor(df_captacao, "Depositos a Vista")
         dep_prazo = extrair_valor(df_captacao, "Depositos a Prazo")
         dep_poupanca = extrair_valor(df_captacao, "Depositos de Poupanca")
 
         kpis_cap = []
         if dep_vista is not None:
-            kpis_cap.append({"label": "Depositos a Vista", "valor": formatar_bilhoes(dep_vista * 1000)})
+            kpis_cap.append({"label": "Depósitos à Vista", "valor": formatar_bilhoes(dep_vista * 1000)})
         if dep_prazo is not None:
-            kpis_cap.append({"label": "Depositos a Prazo", "valor": formatar_bilhoes(dep_prazo * 1000)})
+            kpis_cap.append({"label": "Depósitos a Prazo", "valor": formatar_bilhoes(dep_prazo * 1000)})
         if dep_poupanca is not None:
-            kpis_cap.append({"label": "Poupanca", "valor": formatar_bilhoes(dep_poupanca * 1000)})
+            kpis_cap.append({"label": "Poupança", "valor": formatar_bilhoes(dep_poupanca * 1000)})
         if kpis_cap:
             kpi_row(kpis_cap)
 
-        # Grafico composicao captacao
+        # Gráfico composição captação
         df_comp = extrair_contas(df_captacao, top_n=8)
         df_comp = df_comp[df_comp["Valor"] > 0]
         if not df_comp.empty:
             fig = grafico_pizza(
                 df_comp, valores="Valor", nomes="NomeConta",
-                titulo="Composicao da Captacao",
+                titulo="Composição da Captação",
             )
             fig.update_layout(
                 legend=dict(
@@ -142,11 +142,11 @@ with tab_captacao:
             )
             st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Dados de captacao nao disponiveis.")
+        st.info("Dados de captação não disponíveis.")
 
 # === Tab Resultado ===
 with tab_resultado:
-    st.subheader("Demonstracao de Resultado (DRE)")
+    st.subheader("Demonstração de Resultado (DRE)")
 
     df_dre = buscar_ifdata_transpocred(IFDATA_RELATORIOS["DRE"])
 
@@ -163,9 +163,9 @@ with tab_resultado:
                 "delta_color": "normal" if resultado_liq and resultado_liq > 0 else "inverse",
             })
         if receitas is not None:
-            kpis_dre.append({"label": "Receitas de Intermediacao", "valor": formatar_bilhoes(receitas * 1000)})
+            kpis_dre.append({"label": "Receitas de Intermediação", "valor": formatar_bilhoes(receitas * 1000)})
         if despesas is not None:
-            kpis_dre.append({"label": "Despesas de Intermediacao", "valor": formatar_bilhoes(abs(despesas) * 1000 if despesas else 0)})
+            kpis_dre.append({"label": "Despesas de Intermediação", "valor": formatar_bilhoes(abs(despesas) * 1000 if despesas else 0)})
         if kpis_dre:
             kpi_row(kpis_dre)
 
@@ -178,17 +178,17 @@ with tab_resultado:
                 hide_index=True,
             )
     else:
-        st.info("Dados de resultado nao disponiveis.")
+        st.info("Dados de resultado não disponíveis.")
 
-# === Tab Inadimplencia ===
+# === Tab Inadimplência ===
 with tab_inadimplencia:
-    st.subheader("Inadimplencia")
+    st.subheader("Inadimplência")
     st.markdown(
-        "Indicador calculado a partir das operacoes **vencidas ha mais de 15 dias** "
-        "em relacao ao total da carteira (relatorios 11 e 13 do IF.data)."
+        "Indicador calculado a partir das operações **vencidas há mais de 15 dias** "
+        "em relação ao total da carteira (relatórios 11 e 13 do IF.data)."
     )
 
-    # Usar dados ja carregados dos relatorios 11 (PF) e 13 (PJ)
+    # Usar dados já carregados dos relatórios 11 (PF) e 13 (PJ)
     df_inad_pf = df_cred_pf if not df_cred_pf.empty else pd.DataFrame()
     df_inad_pj = df_cred_pj if not df_cred_pj.empty else pd.DataFrame()
 
@@ -213,15 +213,15 @@ with tab_inadimplencia:
     kpis_inad = []
     if taxa_pf is not None and tot_pf and tot_pf > 0:
         kpis_inad.append({
-            "label": "Inadimplencia PF",
+            "label": "Inadimplência PF",
             "valor": formatar_percentual(taxa_pf),
-            "help": "Operacoes PF vencidas >15 dias / Total carteira PF",
+            "help": "Operações PF vencidas >15 dias / Total carteira PF",
         })
     if taxa_pj is not None and tot_pj and tot_pj > 0:
         kpis_inad.append({
-            "label": "Inadimplencia PJ",
+            "label": "Inadimplência PJ",
             "valor": formatar_percentual(taxa_pj),
-            "help": "Operacoes PJ vencidas >15 dias / Total carteira PJ",
+            "help": "Operações PJ vencidas >15 dias / Total carteira PJ",
         })
 
     # Taxa combinada
@@ -230,27 +230,27 @@ with tab_inadimplencia:
     if total_geral > 0:
         taxa_geral = vencido_geral / total_geral * 100
         kpis_inad.insert(0, {
-            "label": "Inadimplencia Total",
+            "label": "Inadimplência Total",
             "valor": formatar_percentual(taxa_geral),
-            "help": "Operacoes vencidas >15 dias / Total da carteira",
+            "help": "Operações vencidas >15 dias / Total da carteira",
         })
 
     if kpis_inad:
         kpi_row(kpis_inad)
     else:
-        st.info("Dados de inadimplencia nao disponiveis.")
+        st.info("Dados de inadimplência não disponíveis.")
 
-    # Composicao da carteira PF por prazo
+    # Composição da carteira PF por prazo
     if not df_inad_pf.empty:
         df_pf_view = extrair_contas(df_inad_pf)
         df_pf_view = df_pf_view[df_pf_view["Valor"] > 0]
         if not df_pf_view.empty:
             fig = grafico_barras(
                 df_pf_view, x="NomeConta", y="Valor",
-                titulo="Carteira de Credito PF por Prazo (R$ mil)",
+                titulo="Carteira de Crédito PF por Prazo (R$ mil)",
                 cor=CORES["verde_ailos"],
             )
             st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatorios 3, 4, 11, 13)")
+st.caption("Fonte: Banco Central do Brasil - IF.data (Relatórios 3, 4, 11, 13)")

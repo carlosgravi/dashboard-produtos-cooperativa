@@ -80,13 +80,17 @@ def grafico_barras_agrupadas(df, x, y, cor, titulo=None, altura=400):
 
 
 def grafico_pizza(df, valores, nomes, titulo=None, altura=400):
-    """Grafico de pizza/donut."""
+    """Gráfico de pizza/donut."""
     fig = px.pie(
         df, values=valores, names=nomes,
         color_discrete_sequence=PALETA_SEQUENCIAL,
         hole=0.4,
     )
-    fig.update_traces(textposition="inside", textinfo="percent+label")
+    fig.update_traces(
+        textposition="outside",
+        textinfo="percent+label",
+        pull=[0.02] * len(df),
+    )
     return _aplicar_layout(fig, titulo, altura)
 
 
@@ -115,7 +119,7 @@ def grafico_mapa_brasil(df, coluna_uf, coluna_valor, titulo=None, altura=500, co
     """
     geojson = _carregar_geojson_brasil()
     if geojson is None:
-        st.warning("Nao foi possivel carregar o mapa.")
+        st.warning("Não foi possível carregar o mapa.")
         return None
 
     fig = px.choropleth(

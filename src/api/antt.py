@@ -1,4 +1,4 @@
-"""API da ANTT - RNTRC (Registro Nacional de Transportadores Rodoviarios de Cargas)."""
+"""API da ANTT - RNTRC (Registro Nacional de Transportadores Rodoviários de Cargas)."""
 
 import json
 import os
@@ -22,13 +22,13 @@ def _carregar_cache(subdir, arquivo):
 
 
 def _obter_url_transportadores():
-    """Obtem URL mais recente do CSV de transportadores via API CKAN."""
+    """Obtém URL mais recente do CSV de transportadores via API CKAN."""
     try:
         resp = requests.get(ANTT_TRANSPORTADORES_CKAN, timeout=30)
         resp.raise_for_status()
         dados = resp.json()
         resources = dados.get("result", {}).get("resources", [])
-        # Pegar o recurso mais recente (ultimo da lista)
+        # Pegar o recurso mais recente (último da lista)
         for r in reversed(resources):
             url = r.get("url", "")
             if "transportadores" in url.lower() and url.endswith(".csv"):
@@ -40,7 +40,7 @@ def _obter_url_transportadores():
 
 @st.cache_data(ttl=86400)
 def buscar_rntrc_veiculos():
-    """Busca dados de veiculos RNTRC da ANTT."""
+    """Busca dados de veículos RNTRC da ANTT."""
     # Tentar cache local
     cache = _carregar_cache("antt", "rntrc_veiculos_resumo.json")
     if cache is not None and isinstance(cache, dict) and "por_uf" in cache:
@@ -73,7 +73,7 @@ def buscar_rntrc_veiculos():
         df = df.rename(columns=renames)
         return df
     except Exception as e:
-        st.error(f"Erro ao buscar dados RNTRC de veiculos: {e}")
+        st.error(f"Erro ao buscar dados RNTRC de veículos: {e}")
         return pd.DataFrame()
 
 
@@ -88,7 +88,7 @@ def buscar_rntrc_transportadores_resumo():
     # Obter URL dinamicamente via CKAN
     url_csv = _obter_url_transportadores()
     if not url_csv:
-        st.error("Nao foi possivel obter a URL do CSV de transportadores da ANTT.")
+        st.error("Não foi possível obter a URL do CSV de transportadores da ANTT.")
         return pd.DataFrame()
 
     try:
@@ -103,7 +103,7 @@ def buscar_rntrc_transportadores_resumo():
         frames = []
         for chunk in chunks:
             chunk.columns = [c.strip().lower() for c in chunk.columns]
-            # Identificar colunas de UF, categoria e situacao
+            # Identificar colunas de UF, categoria e situação
             col_uf = next((c for c in chunk.columns if c == "uf"), None)
             col_cat = next((c for c in chunk.columns if "categoria" in c), None)
             col_sit = next((c for c in chunk.columns if "situacao" in c), None)
@@ -121,7 +121,7 @@ def buscar_rntrc_transportadores_resumo():
 
 
 def resumo_veiculos_por_uf(df_veiculos):
-    """Agrega veiculos por UF."""
+    """Agrega veículos por UF."""
     if isinstance(df_veiculos, dict) and "por_uf" in df_veiculos:
         df = pd.DataFrame(df_veiculos["por_uf"])
         if "Total" in df.columns and "Total_Veiculos" not in df.columns:
@@ -141,7 +141,7 @@ def resumo_veiculos_por_uf(df_veiculos):
 
 
 def resumo_veiculos_por_tipo(df_veiculos):
-    """Agrega veiculos por tipo."""
+    """Agrega veículos por tipo."""
     if isinstance(df_veiculos, dict) and "por_tipo" in df_veiculos:
         return pd.DataFrame(df_veiculos["por_tipo"]).sort_values("Total", ascending=False)
     if not isinstance(df_veiculos, pd.DataFrame) or df_veiculos.empty:
@@ -154,7 +154,7 @@ def resumo_veiculos_por_tipo(df_veiculos):
 
 
 def resumo_idade_frota(df_veiculos):
-    """Calcula distribuicao de idade da frota."""
+    """Calcula distribuição de idade da frota."""
     if isinstance(df_veiculos, dict) and "por_idade" in df_veiculos:
         return pd.DataFrame(df_veiculos["por_idade"])
     if not isinstance(df_veiculos, pd.DataFrame) or df_veiculos.empty:

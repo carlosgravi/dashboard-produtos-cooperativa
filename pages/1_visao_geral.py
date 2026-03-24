@@ -1,4 +1,4 @@
-"""Pagina 1 - Visao Geral da Transpocred."""
+"""Página 1 - Visão Geral da Transpocred."""
 
 import streamlit as st
 import pandas as pd
@@ -9,10 +9,10 @@ from src.utils.formatting import formatar_bilhoes, formatar_numero, formatar_per
 from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_linha, grafico_barras
 
-st.header(f"Visao Geral - {TRANSPOCRED_NOME}")
+st.header(f"Visão Geral - {TRANSPOCRED_NOME}")
 st.markdown(
-    "Principais indicadores da Transpocred - Cooperativa de Credito dos Trabalhadores "
-    "em Transportes, Correios e Logistica (Sistema Ailos)."
+    "Principais indicadores da Transpocred - Cooperativa de Crédito dos Trabalhadores "
+    "em Transportes, Correios e Logística (Sistema Ailos)."
 )
 
 # === Carregar dados ===
@@ -21,7 +21,7 @@ df_info = buscar_ifdata_transpocred(IFDATA_RELATORIOS["INFO_CAPITAL"])
 
 # === Extrair KPIs do resumo ===
 def extrair_valor(df, nome_conta):
-    """Extrai valor de uma conta especifica do IF.data."""
+    """Extrai valor de uma conta específica do IF.data."""
     if df.empty:
         return None
     mask = df["NomeConta"].str.contains(nome_conta, case=False, na=False)
@@ -45,25 +45,25 @@ if ativo_total is not None:
     })
 if patrimonio_liq is not None:
     kpis.append({
-        "label": "Patrimonio Liquido",
+        "label": "Patrimônio Líquido",
         "valor": formatar_bilhoes(patrimonio_liq * 1000),
-        "help": "Patrimonio liquido da cooperativa",
+        "help": "Patrimônio líquido da cooperativa",
     })
 if op_credito is not None:
     kpis.append({
-        "label": "Operacoes de Credito",
+        "label": "Operações de Crédito",
         "valor": formatar_bilhoes(op_credito * 1000),
-        "help": "Saldo de operacoes de credito",
+        "help": "Saldo de operações de crédito",
     })
 if depositos is not None:
     kpis.append({
-        "label": "Depositos Totais",
+        "label": "Depósitos Totais",
         "valor": formatar_bilhoes(depositos * 1000),
-        "help": "Total de depositos captados",
+        "help": "Total de depósitos captados",
     })
 
-# KPIs fixos (dados institucionais publicos)
-kpis.append({"label": "Cooperados", "valor": formatar_numero(58200), "help": "Numero aproximado de cooperados"})
+# KPIs fixos (dados institucionais públicos)
+kpis.append({"label": "Cooperados", "valor": formatar_numero(58200), "help": "Número aproximado de cooperados"})
 kpis.append({"label": "Pontos de Atendimento", "valor": "51", "help": "Quantidade de pontos de atendimento"})
 
 if kpis:
@@ -73,8 +73,8 @@ if kpis:
 
 st.markdown("---")
 
-# === Evolucao Trimestral ===
-st.subheader("Evolucao Trimestral")
+# === Evolução Trimestral ===
+st.subheader("Evolução Trimestral")
 
 df_evolucao = buscar_ifdata_evolucao(
     IFDATA_RELATORIOS["RESUMO"],
@@ -95,7 +95,7 @@ if not df_evolucao.empty:
         )
         fig = grafico_barras(
             df_ativo, x="Trimestre", y="Valor",
-            titulo="Evolucao do Ativo Total (R$ mil)",
+            titulo="Evolução do Ativo Total (R$ mil)",
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -110,21 +110,21 @@ if not df_evolucao.empty:
         )
         fig = grafico_barras(
             df_pl, x="Trimestre", y="Valor",
-            titulo="Evolucao do Patrimonio Liquido (R$ mil)",
+            titulo="Evolução do Patrimônio Líquido (R$ mil)",
         )
         st.plotly_chart(fig, use_container_width=True)
 else:
-    st.info("Dados de evolucao trimestral nao disponiveis no momento.")
+    st.info("Dados de evolução trimestral não disponíveis no momento.")
 
-# === Informacoes cadastrais ===
+# === Informações cadastrais ===
 if not df_info.empty:
     st.markdown("---")
-    st.subheader("Informacoes Cadastrais")
+    st.subheader("Informações Cadastrais")
     st.dataframe(
-        df_info[["NomeConta", "Valor"]].rename(columns={"NomeConta": "Informacao", "Valor": "Detalhe"}),
+        df_info[["NomeConta", "Valor"]].rename(columns={"NomeConta": "Informação", "Valor": "Detalhe"}),
         use_container_width=True,
         hide_index=True,
     )
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatorios 1 e 5)")
+st.caption("Fonte: Banco Central do Brasil - IF.data (Relatórios 1 e 5)")

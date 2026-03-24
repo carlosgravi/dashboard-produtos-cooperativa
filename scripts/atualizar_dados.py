@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import requests
 
-# === Configuracao ===
+# === Configuração ===
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 TRANSPOCRED_CNPJ_8 = "08075352"
 IFDATA_BASE = "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata"
@@ -78,7 +78,7 @@ def _salvar_json(subdir, arquivo, dados):
 
 
 def _get_ifdata_datas_base():
-    """Retorna lista das datas-base disponiveis no IF.data."""
+    """Retorna lista das datas-base disponíveis no IF.data."""
     hoje = datetime.now()
     datas = []
     for ano in range(hoje.year, hoje.year - 4, -1):
@@ -121,7 +121,7 @@ def _buscar_ifdata(relatorio, data_base, cnpj_8=None, tipo_instituicao=1, timeou
 
 
 def _encontrar_data_base_disponivel(cnpj_8=None, max_tentativas=4):
-    """Tenta datas-base sucessivas ate encontrar uma com dados."""
+    """Tenta datas-base sucessivas até encontrar uma com dados."""
     datas = _get_ifdata_datas_base()
     for dt in datas[:max_tentativas]:
         try:
@@ -134,7 +134,7 @@ def _encontrar_data_base_disponivel(cnpj_8=None, max_tentativas=4):
 
 
 def _url_diesel_mensal(ano, mes):
-    """Monta URL do CSV mensal de diesel conforme padrao do ano."""
+    """Monta URL do CSV mensal de diesel conforme padrão do ano."""
     if ano >= 2026:
         return f"{ANP_MENSAL_BASE}/{ano}/{mes:02d}-dados-abertos-precos-diesel-gnv.csv"
     else:
@@ -142,7 +142,7 @@ def _url_diesel_mensal(ano, mes):
 
 
 def _ler_csv_anp(url):
-    """Le CSV de diesel da ANP e retorna DataFrame normalizado."""
+    """Lê CSV de diesel da ANP e retorna DataFrame normalizado."""
     df = pd.read_csv(url, sep=";", encoding="latin-1", dtype=str, on_bad_lines="skip")
     df.columns = [c.strip() for c in df.columns]
     col_uf = next((c for c in df.columns if "Estado" in c and "Sigla" in c), None)
@@ -161,12 +161,12 @@ def _ler_csv_anp(url):
 
 
 # ============================================================
-# 1. Series SGS
+# 1. Séries SGS
 # ============================================================
 
 def buscar_e_salvar_sgs():
-    """Busca todas as series SGS e salva em data/bcb/."""
-    print("\n=== Series SGS ===")
+    """Busca todas as séries SGS e salva em data/bcb/."""
+    print("\n=== Séries SGS ===")
     hoje = datetime.now()
     data_inicio = (hoje - timedelta(days=5 * 365)).strftime("%d/%m/%Y")
 
@@ -176,7 +176,7 @@ def buscar_e_salvar_sgs():
             params = {"formato": "json", "dataInicial": data_inicio}
             resp = requests.get(url, params=params, timeout=60)
 
-            # Se 404 com filtro de data (serie anual antiga), tentar sem filtro
+            # Se 404 com filtro de data (série anual antiga), tentar sem filtro
             if resp.status_code == 404:
                 print(f"  [RETRY] sgs_{nome}.json - tentando sem filtro de data...")
                 params = {"formato": "json"}
@@ -197,14 +197,14 @@ def buscar_e_salvar_sgs():
 
 
 # ============================================================
-# 2. IF.data Transpocred (relatorios individuais)
+# 2. IF.data Transpocred (relatórios individuais)
 # ============================================================
 
 def buscar_e_salvar_ifdata_transpocred():
     """Busca dados IF.data filtrados para Transpocred e salva."""
     print("\n=== IF.data Transpocred ===")
     data_base = _encontrar_data_base_disponivel(cnpj_8=TRANSPOCRED_CNPJ_8)
-    print(f"  Data-base disponivel: {data_base}")
+    print(f"  Data-base disponível: {data_base}")
 
     for nome, relatorio in IFDATA_RELATORIOS_TRANSPOCRED.items():
         try:
@@ -218,12 +218,12 @@ def buscar_e_salvar_ifdata_transpocred():
 
 
 # ============================================================
-# 3. IF.data Evolucao (12 trimestres)
+# 3. IF.data Evolução (12 trimestres)
 # ============================================================
 
 def buscar_e_salvar_ifdata_evolucao():
-    """Busca 12 trimestres do relatorio 1 para Transpocred."""
-    print("\n=== IF.data Evolucao Trimestral ===")
+    """Busca 12 trimestres do relatório 1 para Transpocred."""
+    print("\n=== IF.data Evolução Trimestral ===")
     datas = _get_ifdata_datas_base()[:12]
     frames = []
 
@@ -243,7 +243,7 @@ def buscar_e_salvar_ifdata_evolucao():
         df_all = pd.concat(frames, ignore_index=True)
         _salvar_json("bcb", "ifdata_transpocred_evolucao.json", df_all.to_dict(orient="records"))
     else:
-        print("  [VAZIO] Nenhum dado de evolucao obtido")
+        print("  [VAZIO] Nenhum dado de evolução obtido")
 
 
 # ============================================================
@@ -251,7 +251,7 @@ def buscar_e_salvar_ifdata_evolucao():
 # ============================================================
 
 def _buscar_cadastro_cooperativas(data_base):
-    """Busca cadastro IF.data e retorna mapeamento CodInst -> NomeInstituicao para cooperativas."""
+    """Busca cadastro IF.data e retorna mapeamento CodInst -> NomeInstituição para cooperativas."""
     url = (
         f"{IFDATA_BASE}/IfDataCadastro(AnoMes=@AnoMes)"
         f"?@AnoMes={data_base}"
@@ -260,7 +260,7 @@ def _buscar_cadastro_cooperativas(data_base):
     resp = requests.get(url, timeout=120)
     resp.raise_for_status()
     registros = resp.json().get("value", [])
-    # Filtrar apenas cooperativas de credito
+    # Filtrar apenas cooperativas de crédito
     mapa = {}
     for r in registros:
         if "Cooperativa" in str(r.get("SegmentoTb", "")):
@@ -269,20 +269,20 @@ def _buscar_cadastro_cooperativas(data_base):
 
 
 def buscar_e_salvar_ifdata_ranking():
-    """Busca relatorio 1 de TODAS as cooperativas (para ranking)."""
+    """Busca relatório 1 de TODAS as cooperativas (para ranking)."""
     print("\n=== IF.data Ranking (todas as cooperativas) ===")
-    print("  Isso pode levar ate 5 minutos...")
+    print("  Isso pode levar até 5 minutos...")
     data_base = _encontrar_data_base_disponivel(cnpj_8=TRANSPOCRED_CNPJ_8)
     print(f"  Data-base: {data_base}")
 
     try:
         # 1. Buscar cadastro para obter nomes e filtrar cooperativas
-        print("  Buscando cadastro de instituicoes...")
+        print("  Buscando cadastro de instituições...")
         mapa_nomes = _buscar_cadastro_cooperativas(data_base)
         print(f"  Cooperativas no cadastro: {len(mapa_nomes)}")
 
-        # 2. Buscar valores (instituicoes individuais = tipo 3)
-        print("  Buscando dados financeiros (instituicoes individuais)...")
+        # 2. Buscar valores (instituições individuais = tipo 3)
+        print("  Buscando dados financeiros (instituições individuais)...")
         url = (
             f"{IFDATA_BASE}/IfDataValores(AnoMes=@AnoMes,TipoInstituicao=@TipoInstituicao,"
             f"Relatorio=@Relatorio)"
@@ -361,7 +361,7 @@ def buscar_e_salvar_sedes():
 # ============================================================
 
 def _obter_url_transportadores():
-    """Obtem URL mais recente do CSV de transportadores via API CKAN."""
+    """Obtém URL mais recente do CSV de transportadores via API CKAN."""
     try:
         resp = requests.get(ANTT_TRANSPORTADORES_CKAN, timeout=30)
         resp.raise_for_status()
@@ -380,16 +380,15 @@ def buscar_e_salvar_antt():
     """Busca dados ANTT e salva resumos agregados."""
     print("\n=== ANTT RNTRC ===")
 
-    # Veiculos
+    # Veículos
     try:
-        print("  Baixando CSV de veiculos...")
+        print("  Baixando CSV de veículos...")
         df = pd.read_csv(
             ANTT_VEICULOS_CSV, sep=";", encoding="latin-1", dtype=str, on_bad_lines="skip",
         )
         df.columns = [c.strip().lower() for c in df.columns]
 
-        # Identificar colunas dinamicamente
-        col_uf = next((c for c in df.columns if "uf" in c), None)
+        # Identificar colunas dinamicamente        col_uf = next((c for c in df.columns if "uf" in c), None)
         col_tipo = next((c for c in df.columns if "tipo" in c and "veic" in c), None)
         col_ano = next((c for c in df.columns if "ano" in c and "fabric" in c), None)
 
@@ -425,7 +424,7 @@ def buscar_e_salvar_antt():
     try:
         url_csv = _obter_url_transportadores()
         if not url_csv:
-            print("  [ERRO] Nao foi possivel obter URL de transportadores via CKAN")
+            print("  [ERRO] Não foi possível obter URL de transportadores via CKAN")
             return
 
         print(f"  Baixando CSV de transportadores (chunks)...")
@@ -459,18 +458,18 @@ def buscar_e_salvar_antt():
 # ============================================================
 
 def buscar_e_salvar_anp():
-    """Busca precos de diesel da ANP e salva."""
+    """Busca preços de diesel da ANP e salva."""
     print("\n=== ANP Diesel ===")
     hoje = datetime.now()
 
-    # Diesel recente: ultimas 4 semanas (URL fixa)
+    # Diesel recente: últimas 4 semanas (URL fixa)
     try:
         df_recente = _ler_csv_anp(ANP_RECENTE_URL)
         if not df_recente.empty:
             df_recente["Data_Coleta"] = df_recente["Data_Coleta"].dt.strftime("%Y-%m-%d")
             _salvar_json("anp", "diesel_recente.json", df_recente.to_dict(orient="records"))
         else:
-            print("  [VAZIO] diesel_recente.json (ultimas 4 semanas)")
+            print("  [VAZIO] diesel_recente.json (últimas 4 semanas)")
     except Exception as e:
         print(f"  [ERRO] diesel_recente.json: {e}")
         # Fallback: CSVs mensais
@@ -493,7 +492,7 @@ def buscar_e_salvar_anp():
             df_r = pd.concat(frames_recente, ignore_index=True)
             _salvar_json("anp", "diesel_recente.json", df_r.to_dict(orient="records"))
 
-    # Diesel historico (2 anos, semestral)
+    # Diesel histórico (2 anos, semestral)
     ano_inicio = hoje.year - 2
     frames_hist = []
     for ano in range(ano_inicio, hoje.year + 1):
@@ -512,9 +511,9 @@ def buscar_e_salvar_anp():
                     resumo["Mes"] = mes
                     resumo["Data"] = resumo["Data"].dt.strftime("%Y-%m-%d")
                     frames_hist.append(resumo)
-                    print(f"  [OK] ANP historico {ano}-{mes:02d}")
+                    print(f"  [OK] ANP histórico {ano}-{mes:02d}")
             except Exception as e:
-                print(f"  [SKIP] ANP historico {ano}-{mes:02d}: {e}")
+                print(f"  [SKIP] ANP histórico {ano}-{mes:02d}: {e}")
 
     if frames_hist:
         df_hist = pd.concat(frames_hist, ignore_index=True)
@@ -528,8 +527,8 @@ def buscar_e_salvar_anp():
 # ============================================================
 
 def main():
-    print(f"=== Atualizacao de dados - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
-    print(f"Diretorio de dados: {os.path.abspath(DATA_DIR)}")
+    print(f"=== Atualização de dados - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
+    print(f"Diretório de dados: {os.path.abspath(DATA_DIR)}")
 
     buscar_e_salvar_sgs()
     buscar_e_salvar_ifdata_transpocred()
@@ -539,7 +538,7 @@ def main():
     buscar_e_salvar_antt()
     buscar_e_salvar_anp()
 
-    print(f"\n=== Concluido - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
+    print(f"\n=== Concluído - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
 
 
 if __name__ == "__main__":

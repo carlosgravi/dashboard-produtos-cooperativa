@@ -1,4 +1,4 @@
-"""Pagina 4 - Comparativo de Mercado: Ranking entre cooperativas."""
+"""Página 4 - Comparativo de Mercado: Ranking entre cooperativas."""
 
 import streamlit as st
 import pandas as pd
@@ -11,7 +11,7 @@ from src.components.charts import grafico_barras
 
 st.header("Comparativo de Mercado")
 st.markdown(
-    f"Posicionamento da **{TRANSPOCRED_NOME}** no ranking de cooperativas singulares de credito."
+    f"Posicionamento da **{TRANSPOCRED_NOME}** no ranking de cooperativas singulares de crédito."
 )
 
 # === Carregar dados completos (sem filtro de CNPJ) ===
@@ -24,7 +24,7 @@ df_todas = buscar_ifdata_valores(
 
 if df_todas.empty:
     st.error(
-        "Nao foi possivel carregar os dados completos das cooperativas. "
+        "Não foi possível carregar os dados completos das cooperativas. "
         "Isso pode acontecer por timeout na API do BCB. Tente novamente mais tarde."
     )
     st.stop()
@@ -36,16 +36,16 @@ df_ativo = df_todas[
 ].copy()
 
 if df_ativo.empty:
-    st.warning("Dados de Ativo Total nao encontrados. Verificando contas disponiveis...")
+    st.warning("Dados de Ativo Total não encontrados. Verificando contas disponíveis...")
     if "NomeConta" in df_todas.columns:
         contas = df_todas["NomeConta"].unique()
-        st.write("Contas disponiveis:", contas[:20])
+        st.write("Contas disponíveis:", contas[:20])
     st.stop()
 
 df_ativo["Valor"] = pd.to_numeric(df_ativo["Valor"], errors="coerce")
 df_ativo = df_ativo.dropna(subset=["Valor"])
 
-# Identificar coluna de nome da instituicao
+# Identificar coluna de nome da instituição
 col_nome = None
 for c in ["NomeInstituicao", "NomeInst", "Instituicao", "Nome", "RazaoSocial"]:
     if c in df_ativo.columns:
@@ -55,7 +55,7 @@ col_cod = "CodInst" if "CodInst" in df_ativo.columns else None
 
 # === Ranking ===
 df_ranking = df_ativo.sort_values("Valor", ascending=False).reset_index(drop=True)
-df_ranking["Posicao"] = range(1, len(df_ranking) + 1)
+df_ranking["Posição"] = range(1, len(df_ranking) + 1)
 
 # Encontrar Transpocred
 mask_transp = pd.Series([False] * len(df_ranking))
@@ -68,7 +68,7 @@ posicao_transp = None
 valor_transp = None
 if mask_transp.any():
     idx = df_ranking[mask_transp].index[0]
-    posicao_transp = df_ranking.loc[idx, "Posicao"]
+    posicao_transp = df_ranking.loc[idx, "Posição"]
     valor_transp = df_ranking.loc[idx, "Valor"]
 
 total_coops = len(df_ranking)
@@ -81,8 +81,8 @@ kpis = [
 ]
 if posicao_transp is not None:
     kpis.append({
-        "label": f"Posicao {TRANSPOCRED_NOME}",
-        "valor": f"{posicao_transp}o de {total_coops}",
+        "label": f"Posição {TRANSPOCRED_NOME}",
+        "valor": f"{posicao_transp}º de {total_coops}",
         "help": "Ranking por Ativo Total",
     })
 if valor_transp is not None:
@@ -91,9 +91,9 @@ if valor_transp is not None:
         "valor": formatar_bilhoes(valor_transp * 1000),
     })
 kpis.append({
-    "label": "Media do Setor",
+    "label": "Média do Setor",
     "valor": formatar_bilhoes(media_ativo * 1000),
-    "help": "Media de Ativo Total entre cooperativas",
+    "help": "Média de Ativo Total entre cooperativas",
 })
 
 kpi_row(kpis)
@@ -131,7 +131,7 @@ if col_nome:
 elif col_cod:
     df_top20["Label"] = df_top20[col_cod]
 else:
-    df_top20["Label"] = df_top20["Posicao"].astype(str)
+    df_top20["Label"] = df_top20["Posição"].astype(str)
 
 # Cores: verde para Transpocred, cinza para outros
 cores_barras = []
@@ -161,12 +161,12 @@ layout["xaxis"] = dict(tickangle=-45)
 fig.update_layout(**layout)
 st.plotly_chart(fig, use_container_width=True)
 
-# === Transpocred vs Media vs Mediana ===
+# === Transpocred vs Média vs Mediana ===
 st.subheader(f"{TRANSPOCRED_NOME} vs Setor")
 
 if valor_transp is not None:
     df_comp = pd.DataFrame({
-        "Indicador": [TRANSPOCRED_NOME, "Media do Setor", "Mediana do Setor"],
+        "Indicador": [TRANSPOCRED_NOME, "Média do Setor", "Mediana do Setor"],
         "Valor": [valor_transp, media_ativo, mediana_ativo],
     })
 
@@ -176,7 +176,7 @@ if valor_transp is not None:
         color="Indicador",
         color_discrete_map={
             TRANSPOCRED_NOME: CORES["verde_ailos"],
-            "Media do Setor": CORES["azul"],
+            "Média do Setor": CORES["azul"],
             "Mediana do Setor": CORES["laranja"],
         },
         text=[formatar_bilhoes(v * 1000) for v in df_comp["Valor"]],
@@ -186,9 +186,9 @@ if valor_transp is not None:
     fig_comp.update_layout(title=dict(text="Ativo Total - Comparativo (R$ mil)", x=0.5))
     st.plotly_chart(fig_comp, use_container_width=True)
 
-# === Tabela completa (expansivel) ===
+# === Tabela completa (expansível) ===
 with st.expander("Ver ranking completo"):
-    colunas_exibir = ["Posicao"]
+    colunas_exibir = ["Posição"]
     if col_nome:
         colunas_exibir.append(col_nome)
     if col_cod:
@@ -203,4 +203,4 @@ with st.expander("Ver ranking completo"):
     )
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatorio 1 - Todas as Cooperativas)")
+st.caption("Fonte: Banco Central do Brasil - IF.data (Relatório 1 - Todas as Cooperativas)")

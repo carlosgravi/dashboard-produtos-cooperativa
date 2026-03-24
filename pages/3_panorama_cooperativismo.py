@@ -1,4 +1,4 @@
-"""Pagina 3 - Panorama do Cooperativismo de Credito."""
+"""Página 3 - Panorama do Cooperativismo de Crédito."""
 
 import streamlit as st
 
@@ -8,12 +8,12 @@ from src.utils.formatting import formatar_numero, formatar_bilhoes
 from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_linha, grafico_linhas_multiplas
 
-st.header("Panorama do Cooperativismo de Credito")
-st.markdown("Evolucao do setor cooperativista de credito no Brasil com dados do Banco Central.")
+st.header("Panorama do Cooperativismo de Crédito")
+st.markdown("Evolução do setor cooperativista de crédito no Brasil com dados do Banco Central.")
 
 # === Carregar dados ===
-# Series de cooperativismo sao anuais com dados historicos limitados (ate 2018/2022).
-# Carregar sem filtro de data para exibir todo o historico disponivel.
+# Séries de cooperativismo são anuais com dados históricos limitados (até 2018/2022).
+# Carregar sem filtro de data para exibir todo o histórico disponível.
 df_qtd = buscar_serie_sgs(SGS["COOP_QTD"])
 df_cred_pf = buscar_serie_sgs(SGS["COOP_CREDITO_PF"])
 df_cred_pj = buscar_serie_sgs(SGS["COOP_CREDITO_PJ"])
@@ -25,27 +25,27 @@ df_singular = buscar_serie_sgs(SGS["COOP_SINGULAR"])
 kpis = []
 if not df_qtd.empty:
     kpis.append({
-        "label": "Cooperativas de Credito",
+        "label": "Cooperativas de Crédito",
         "valor": formatar_numero(df_qtd["valor"].iloc[-1]),
-        "help": "Quantidade de cooperativas de credito em funcionamento",
+        "help": "Quantidade de cooperativas de crédito em funcionamento",
     })
 if not df_cred_pf.empty:
     kpis.append({
-        "label": "Credito PF (Cooperativas)",
+        "label": "Crédito PF (Cooperativas)",
         "valor": formatar_bilhoes(df_cred_pf["valor"].iloc[-1] * 1e6),
-        "help": "Saldo de operacoes de credito PF em cooperativas (R$ milhoes)",
+        "help": "Saldo de operações de crédito PF em cooperativas (R$ milhões)",
     })
 if not df_cred_pj.empty:
     kpis.append({
-        "label": "Credito PJ (Cooperativas)",
+        "label": "Crédito PJ (Cooperativas)",
         "valor": formatar_bilhoes(df_cred_pj["valor"].iloc[-1] * 1e6),
-        "help": "Saldo de operacoes de credito PJ em cooperativas (R$ milhoes)",
+        "help": "Saldo de operações de crédito PJ em cooperativas (R$ milhões)",
     })
 if not df_dep_pf.empty:
     kpis.append({
-        "label": "Depositos PF (Cooperativas)",
+        "label": "Depósitos PF (Cooperativas)",
         "valor": formatar_bilhoes(df_dep_pf["valor"].iloc[-1] * 1e6),
-        "help": "Depositos a vista PF em cooperativas (R$ milhoes)",
+        "help": "Depósitos à vista PF em cooperativas (R$ milhões)",
     })
 
 if kpis:
@@ -53,19 +53,19 @@ if kpis:
 
 st.markdown("---")
 
-# === Graficos ===
+# === Gráficos ===
 col1, col2 = st.columns(2)
 
 with col1:
     if not df_qtd.empty:
         fig = grafico_linha(
             df_qtd, x="data", y="valor",
-            titulo="Evolucao da Quantidade de Cooperativas",
+            titulo="Evolução da Quantidade de Cooperativas",
             cor=CORES["verde_ailos"],
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Dados de quantidade de cooperativas nao disponiveis.")
+        st.info("Dados de quantidade de cooperativas não disponíveis.")
 
 with col2:
     if not df_central.empty and not df_singular.empty:
@@ -81,16 +81,16 @@ with col2:
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Dados de cooperativas centrais/singulares nao disponiveis.")
+        st.info("Dados de cooperativas centrais/singulares não disponíveis.")
 
-st.markdown("### Saldo de Credito em Cooperativas")
+st.markdown("### Saldo de Crédito em Cooperativas")
 col3, col4 = st.columns(2)
 
 with col3:
     if not df_cred_pf.empty:
         fig = grafico_linha(
             df_cred_pf, x="data", y="valor",
-            titulo="Credito PF - Cooperativas (R$ milhoes)",
+            titulo="Crédito PF - Cooperativas (R$ milhões)",
             cor=CORES["azul"],
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -99,19 +99,19 @@ with col4:
     if not df_cred_pj.empty:
         fig = grafico_linha(
             df_cred_pj, x="data", y="valor",
-            titulo="Credito PJ - Cooperativas (R$ milhoes)",
+            titulo="Crédito PJ - Cooperativas (R$ milhões)",
             cor=CORES["laranja"],
         )
         st.plotly_chart(fig, use_container_width=True)
 
 if not df_dep_pf.empty:
-    st.markdown("### Depositos a Vista PF em Cooperativas")
+    st.markdown("### Depósitos à Vista PF em Cooperativas")
     fig = grafico_linha(
         df_dep_pf, x="data", y="valor",
-        titulo="Depositos a Vista PF (R$ milhoes)",
+        titulo="Depósitos à Vista PF (R$ milhões)",
         cor=CORES["verde_escuro"],
     )
     st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - SGS (Series 24869, 25517, 25518, 25519, 25509, 25510)")
+st.caption("Fonte: Banco Central do Brasil - SGS (Séries 24869, 25517, 25518, 25519, 25509, 25510)")

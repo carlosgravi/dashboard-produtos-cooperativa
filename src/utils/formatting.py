@@ -1,4 +1,4 @@
-"""Funcoes de formatacao para valores brasileiros (BRL, %, numeros)."""
+"""Funções de formatação para valores brasileiros (BRL, %, números)."""
 
 import math
 
@@ -19,7 +19,7 @@ def formatar_moeda(valor, prefixo="R$ "):
 
 
 def formatar_bilhoes(valor, prefixo="R$ "):
-    """Formata valor em bilhoes: R$ 2,6 bi"""
+    """Formata valor em bilhões: R$ 2,6 bi"""
     if valor is None or (isinstance(valor, float) and math.isnan(valor)):
         return f"{prefixo}—"
     if abs(valor) >= 1e9:
@@ -39,7 +39,7 @@ def formatar_percentual(valor, casas=2):
 
 
 def formatar_numero(valor, casas=0):
-    """Formata numero com separador de milhar brasileiro: 1.234.567"""
+    """Formata número com separador de milhar brasileiro: 1.234.567"""
     if valor is None or (isinstance(valor, float) and math.isnan(valor)):
         return "—"
     if casas == 0:

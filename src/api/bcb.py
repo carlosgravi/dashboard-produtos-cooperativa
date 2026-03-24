@@ -26,15 +26,15 @@ def _carregar_cache(subdir, arquivo):
 
 
 # ============================================================
-# SGS - Sistema Gerenciador de Series Temporais
+# SGS - Sistema Gerenciador de Séries Temporais
 # ============================================================
 
 @st.cache_data(ttl=3600)
 def buscar_serie_sgs(codigo, data_inicio=None, data_fim=None):
-    """Busca serie temporal do SGS/BCB.
+    """Busca série temporal do SGS/BCB.
 
     Args:
-        codigo: Codigo da serie SGS (ex: 4189 para Selic)
+        codigo: Código da série SGS (ex: 4189 para Selic)
         data_inicio: Data inicial no formato 'dd/mm/yyyy' (opcional)
         data_fim: Data final no formato 'dd/mm/yyyy' (opcional)
 
@@ -82,13 +82,13 @@ def buscar_serie_sgs(codigo, data_inicio=None, data_fim=None):
         df["valor"] = pd.to_numeric(df["valor"], errors="coerce")
         return df.dropna(subset=["valor"]).reset_index(drop=True)
     except Exception as e:
-        st.error(f"Erro ao buscar serie SGS {codigo}: {e}")
+        st.error(f"Erro ao buscar série SGS {codigo}: {e}")
         return pd.DataFrame(columns=["data", "valor"])
 
 
 @st.cache_data(ttl=3600)
 def buscar_multiplas_series_sgs(codigos_dict, data_inicio=None, data_fim=None):
-    """Busca multiplas series SGS e retorna DataFrame unificado.
+    """Busca múltiplas séries SGS e retorna DataFrame unificado.
 
     Args:
         codigos_dict: Dict {nome: codigo_sgs}
@@ -96,7 +96,7 @@ def buscar_multiplas_series_sgs(codigos_dict, data_inicio=None, data_fim=None):
         data_fim: Data final 'dd/mm/yyyy'
 
     Returns:
-        DataFrame com coluna 'data' e uma coluna por serie
+        DataFrame com coluna 'data' e uma coluna por série
     """
     resultado = None
     for nome, codigo in codigos_dict.items():
@@ -116,20 +116,20 @@ def buscar_multiplas_series_sgs(codigos_dict, data_inicio=None, data_fim=None):
 
 
 # ============================================================
-# IF.data - Informacoes Financeiras de Instituicoes
+# IF.data - Informações Financeiras de Instituições
 # ============================================================
 
 IFDATA_BASE = "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata"
 
 
 def _get_ifdata_datas_base():
-    """Retorna lista das datas-base disponiveis no IF.data (trimestres passados)."""
+    """Retorna lista das datas-base disponíveis no IF.data (trimestres passados)."""
     hoje = datetime.now()
     datas = []
     for ano in range(hoje.year, hoje.year - 4, -1):
         for mes in [12, 9, 6, 3]:
-            # Dados trimestrais so ficam disponiveis ~2 meses apos o fechamento
-            # Entao so incluimos trimestres com pelo menos 2 meses de defasagem
+            # Dados trimestrais só ficam disponíveis ~2 meses após o fechamento
+            # Então só incluímos trimestres com pelo menos 2 meses de defasagem
             dt_trimestre = datetime(ano, mes, 1)
             if dt_trimestre < hoje - timedelta(days=60):
                 datas.append(f"{ano}{mes:02d}")
@@ -141,14 +141,14 @@ def buscar_ifdata_valores(relatorio, data_base=None, cnpj_8=None, tipo_instituic
     """Busca dados do IF.data (BCB OLINDA).
 
     Args:
-        relatorio: Numero do relatorio (1=Resumo, 3=Passivo, 4=DRE, etc.)
+        relatorio: Número do relatório (1=Resumo, 3=Passivo, 4=DRE, etc.)
         data_base: Data-base no formato 'YYYYMM' (ex: '202312'). Se None, usa mais recente.
-        cnpj_8: CNPJ 8 digitos para filtrar (ex: '08075352'). Se None, retorna todos.
-        tipo_instituicao: Tipo (1=Congl.Prudenciais, 2=Congl.Financeiros, 3=Individuais, 4=Cambio)
-        timeout: Timeout em segundos (padrao 60, usar 300 para queries completas)
+        cnpj_8: CNPJ 8 dígitos para filtrar (ex: '08075352'). Se None, retorna todos.
+        tipo_instituicao: Tipo (1=Congl.Prudenciais, 2=Congl.Financeiros, 3=Individuais, 4=Câmbio)
+        timeout: Timeout em segundos (padrão 60, usar 300 para queries completas)
 
     Returns:
-        DataFrame com os dados do relatorio (coluna Valor normalizada de Saldo)
+        DataFrame com os dados do relatório (coluna Valor normalizada de Saldo)
     """
     # Tentar cache local para ranking (todas cooperativas, sem filtro CNPJ)
     if cnpj_8 is None and relatorio == 1:
@@ -179,10 +179,9 @@ def buscar_ifdata_valores(relatorio, data_base=None, cnpj_8=None, tipo_instituic
         if not registros:
             return pd.DataFrame()
         df = pd.DataFrame(registros)
-        # Normalizar: a API retorna "Saldo", renomear para "Valor" para uso interno
-        if "Saldo" in df.columns:
+        # Normalizar: a API retorna "Saldo", renomear para "Valor" para uso interno        if "Saldo" in df.columns:
             df["Valor"] = pd.to_numeric(df["Saldo"], errors="coerce")
-        # Normalizar nome da conta: "NomeColuna" tem nomes legiveis (ex: "Ativo Total")
+        # Normalizar nome da conta: "NomeColuna" tem nomes legíveis (ex: "Ativo Total")
         if "NomeConta" not in df.columns:
             if "NomeColuna" in df.columns:
                 df["NomeConta"] = df["NomeColuna"]
@@ -193,12 +192,12 @@ def buscar_ifdata_valores(relatorio, data_base=None, cnpj_8=None, tipo_instituic
         return df
     except requests.exceptions.Timeout:
         st.error(
-            f"Timeout ao buscar dados do IF.data (relatorio {relatorio}). "
-            "Os dados completos podem levar ate 5 minutos para carregar. Tente novamente."
+            f"Timeout ao buscar dados do IF.data (relatório {relatorio}). "
+            "Os dados completos podem levar até 5 minutos para carregar. Tente novamente."
         )
         return pd.DataFrame()
     except Exception as e:
-        st.error(f"Erro ao buscar IF.data (relatorio {relatorio}): {e}")
+        st.error(f"Erro ao buscar IF.data (relatório {relatorio}): {e}")
         return pd.DataFrame()
 
 
@@ -231,14 +230,14 @@ def buscar_ifdata_transpocred(relatorio, data_base=None):
 
 @st.cache_data(ttl=86400)
 def buscar_ifdata_evolucao(relatorio, cnpj_8=None, n_trimestres=6):
-    """Busca dados IF.data para multiplas datas-base (evolucao trimestral).
+    """Busca dados IF.data para múltiplas datas-base (evolução trimestral).
 
     Usa chamadas paralelas para reduzir tempo de espera.
 
     Returns:
         DataFrame com todos os trimestres concatenados
     """
-    # Tentar cache local (evolucao pre-carregada com 12 trimestres)
+    # Tentar cache local (evolução pré-carregada com 12 trimestres)
     if relatorio == 1 and cnpj_8:
         from src.utils.constants import TRANSPOCRED_CNPJ_8
         if cnpj_8 == TRANSPOCRED_CNPJ_8:
@@ -281,7 +280,7 @@ def buscar_ifdata_evolucao(relatorio, cnpj_8=None, n_trimestres=6):
 
 @st.cache_data(ttl=86400)
 def buscar_cooperativas_bcbase():
-    """Busca lista de cooperativas de credito do cadastro BCB."""
+    """Busca lista de cooperativas de crédito do cadastro BCB."""
     url = (
         "https://olinda.bcb.gov.br/olinda/servico/BcBase/versao/v2/odata/"
         "CooperativasDeCredito"
@@ -307,7 +306,7 @@ def buscar_cooperativas_bcbase():
 
 @st.cache_data(ttl=86400)
 def buscar_sedes_cooperativas():
-    """Busca cooperativas de credito ativas via BcBase v2."""
+    """Busca cooperativas de crédito ativas via BcBase v2."""
     from src.utils.constants import BCBASE_URL, UF_NOME_PARA_SIGLA
 
     # Tentar cache local
@@ -344,7 +343,7 @@ def buscar_sedes_cooperativas():
 
 @st.cache_data(ttl=86400)
 def buscar_instituicoes_funcionamento(tipo_instituicao=None):
-    """Busca instituicoes em funcionamento no BCB."""
+    """Busca instituições em funcionamento no BCB."""
     url = (
         "https://olinda.bcb.gov.br/olinda/servico/"
         "Instituicoes_em_funcionamento/versao/v2/odata/"
@@ -364,5 +363,5 @@ def buscar_instituicoes_funcionamento(tipo_instituicao=None):
         registros = dados.get("value", [])
         return pd.DataFrame(registros) if registros else pd.DataFrame()
     except Exception as e:
-        st.error(f"Erro ao buscar instituicoes em funcionamento: {e}")
+        st.error(f"Erro ao buscar instituições em funcionamento: {e}")
         return pd.DataFrame()

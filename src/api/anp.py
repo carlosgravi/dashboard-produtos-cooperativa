@@ -1,4 +1,4 @@
-"""API da ANP - Precos de combustiveis (Diesel)."""
+"""API da ANP - Preços de combustíveis (Diesel)."""
 
 import json
 import os
@@ -25,7 +25,7 @@ def _carregar_cache(subdir, arquivo):
 
 
 def _url_diesel_mensal(ano, mes):
-    """Monta URL do CSV mensal de diesel conforme padrao do ano."""
+    """Monta URL do CSV mensal de diesel conforme padrão do ano."""
     if ano >= 2026:
         return f"{ANP_DIESEL_MENSAL_URL}/{ano}/{mes:02d}-dados-abertos-precos-diesel-gnv.csv"
     else:
@@ -33,7 +33,7 @@ def _url_diesel_mensal(ano, mes):
 
 
 def _ler_csv_anp(url):
-    """Le CSV de diesel da ANP e retorna DataFrame normalizado."""
+    """Lê CSV de diesel da ANP e retorna DataFrame normalizado."""
     df = pd.read_csv(
         url,
         sep=";",
@@ -43,7 +43,7 @@ def _ler_csv_anp(url):
     )
     df.columns = [c.strip() for c in df.columns]
 
-    # Identificar colunas por conteudo (nomes podem variar entre versoes)
+    # Identificar colunas por conteúdo (nomes podem variar entre versões)
     col_uf = next((c for c in df.columns if "Estado" in c and "Sigla" in c), None)
     col_produto = next((c for c in df.columns if "Produto" in c), None)
     col_valor = next((c for c in df.columns if "Valor de Venda" in c), None)
@@ -63,7 +63,7 @@ def _ler_csv_anp(url):
 
 @st.cache_data(ttl=86400)
 def buscar_precos_diesel_recentes(n_semanas=4):
-    """Busca precos recentes de diesel da ANP."""
+    """Busca preços recentes de diesel da ANP."""
     # Tentar cache local
     cache = _carregar_cache("anp", "diesel_recente.json")
     if cache is not None and not cache.empty:
@@ -71,7 +71,7 @@ def buscar_precos_diesel_recentes(n_semanas=4):
         cache["Data_Coleta"] = pd.to_datetime(cache["Data_Coleta"], errors="coerce")
         return cache.dropna(subset=["Valor_Venda"])
 
-    # Tentar URL de ultimas 4 semanas (sempre atualizada)
+    # Tentar URL de últimas 4 semanas (sempre atualizada)
     try:
         df = _ler_csv_anp(ANP_DIESEL_RECENTE_URL)
         if not df.empty:
@@ -103,7 +103,7 @@ def buscar_precos_diesel_recentes(n_semanas=4):
 
 @st.cache_data(ttl=86400)
 def buscar_historico_diesel(ano_inicio=None):
-    """Busca historico de precos de diesel (semestral)."""
+    """Busca histórico de preços de diesel (semestral)."""
     # Tentar cache local
     cache = _carregar_cache("anp", "diesel_historico.json")
     if cache is not None and not cache.empty:
@@ -142,7 +142,7 @@ def buscar_historico_diesel(ano_inicio=None):
 
 
 def calcular_preco_medio_diesel_por_uf(df_diesel):
-    """Calcula preco medio do diesel por UF a partir dos dados brutos."""
+    """Calcula preço médio do diesel por UF a partir dos dados brutos."""
     if df_diesel.empty or "Valor_Venda" not in df_diesel.columns:
         return pd.DataFrame()
     return (
@@ -155,7 +155,7 @@ def calcular_preco_medio_diesel_por_uf(df_diesel):
 
 
 def calcular_preco_medio_nacional(df_diesel):
-    """Calcula preco medio nacional do diesel."""
+    """Calcula preço médio nacional do diesel."""
     if df_diesel.empty or "Valor_Venda" not in df_diesel.columns:
         return None
     return df_diesel["Valor_Venda"].mean()

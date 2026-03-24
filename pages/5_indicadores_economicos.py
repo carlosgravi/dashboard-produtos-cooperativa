@@ -1,4 +1,4 @@
-"""Pagina 5 - Indicadores Economicos: Selic, CDI, IPCA, IGP-M, Dolar."""
+"""Página 5 - Indicadores Econômicos: Selic, CDI, IPCA, IGP-M, Dólar."""
 
 import streamlit as st
 import pandas as pd
@@ -10,17 +10,17 @@ from src.utils.formatting import formatar_percentual, formatar_moeda
 from src.components.kpi_card import kpi_row
 from src.components.charts import grafico_linha, grafico_linhas_multiplas, grafico_barras
 
-st.header("Indicadores Economicos")
-st.markdown("Acompanhamento dos principais indicadores macroeconomicos do Brasil.")
+st.header("Indicadores Econômicos")
+st.markdown("Acompanhamento dos principais indicadores macroeconômicos do Brasil.")
 
-# === Seletor de periodo ===
+# === Seletor de período ===
 col_periodo1, col_periodo2 = st.columns(2)
 with col_periodo1:
     anos_atras = st.selectbox(
-        "Periodo",
+        "Período",
         options=[1, 2, 3, 5, 10],
         index=1,
-        format_func=lambda x: f"Ultimos {x} ano{'s' if x > 1 else ''}",
+        format_func=lambda x: f"Últimos {x} ano{'s' if x > 1 else ''}",
     )
 with col_periodo2:
     st.markdown("")  # spacer
@@ -45,15 +45,15 @@ if not df_ipca.empty:
     ipca_12m = df_ipca["valor"].tail(12).sum() if len(df_ipca) >= 12 else df_ipca["valor"].sum()
     kpis.append({"label": "IPCA (12m)", "valor": formatar_percentual(ipca_12m), "help": "IPCA acumulado 12 meses"})
 if not df_dolar.empty:
-    kpis.append({"label": "Dolar (PTAX)", "valor": formatar_moeda(df_dolar["valor"].iloc[-1]), "help": "Cotacao dolar PTAX venda"})
+    kpis.append({"label": "Dólar (PTAX)", "valor": formatar_moeda(df_dolar["valor"].iloc[-1]), "help": "Cotação dólar PTAX venda"})
 
 if kpis:
     kpi_row(kpis)
 
 st.markdown("---")
 
-# === Graficos ===
-tab1, tab2, tab3, tab4 = st.tabs(["Selic & CDI", "IPCA", "IGP-M", "Dolar"])
+# === Gráficos ===
+tab1, tab2, tab3, tab4 = st.tabs(["Selic & CDI", "IPCA", "IGP-M", "Dólar"])
 
 with tab1:
     if not df_selic.empty and not df_cdi.empty:
@@ -65,15 +65,15 @@ with tab1:
         fig = grafico_linhas_multiplas(
             df_juros, x="data", y_cols=["Selic", "CDI"],
             nomes=["Selic (meta)", "CDI"],
-            titulo="Evolucao Selic e CDI (% a.a.)",
+            titulo="Evolução Selic e CDI (% a.a.)",
             formato_y=",.2f",
         )
         st.plotly_chart(fig, use_container_width=True)
     elif not df_selic.empty:
-        fig = grafico_linha(df_selic, x="data", y="valor", titulo="Evolucao da Selic (% a.a.)")
+        fig = grafico_linha(df_selic, x="data", y="valor", titulo="Evolução da Selic (% a.a.)")
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Dados de Selic/CDI nao disponiveis.")
+        st.info("Dados de Selic/CDI não disponíveis.")
 
 with tab2:
     if not df_ipca.empty:
@@ -95,7 +95,7 @@ with tab2:
         )
         st.plotly_chart(fig_ac, use_container_width=True)
     else:
-        st.info("Dados do IPCA nao disponiveis.")
+        st.info("Dados do IPCA não disponíveis.")
 
 with tab3:
     if not df_igpm.empty:
@@ -106,18 +106,18 @@ with tab3:
         )
         st.plotly_chart(fig_igpm, use_container_width=True)
     else:
-        st.info("Dados do IGP-M nao disponiveis.")
+        st.info("Dados do IGP-M não disponíveis.")
 
 with tab4:
     if not df_dolar.empty:
         fig_dolar = grafico_linha(
             df_dolar, x="data", y="valor",
-            titulo="Dolar PTAX (R$)",
+            titulo="Dólar PTAX (R$)",
             cor=CORES["azul_escuro"],
         )
         st.plotly_chart(fig_dolar, use_container_width=True)
     else:
-        st.info("Dados do Dolar nao disponiveis.")
+        st.info("Dados do Dólar não disponíveis.")
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - Sistema Gerenciador de Series Temporais (SGS)")
+st.caption("Fonte: Banco Central do Brasil - Sistema Gerenciador de Séries Temporais (SGS)")

@@ -1,22 +1,22 @@
-"""Constantes do projeto: CNPJ, codigos SGS, URLs, paleta de cores."""
+"""Constantes do projeto: CNPJ, códigos SGS, URLs, paleta de cores."""
 
 # === Transpocred ===
 TRANSPOCRED_CNPJ_8 = "08075352"
 TRANSPOCRED_NOME = "TRANSPOCRED"
 
-# === BCB SGS - Codigos de series temporais ===
+# === BCB SGS - Códigos de séries temporais ===
 SGS = {
-    # Indicadores economicos
+    # Indicadores econômicos
     "SELIC": 4189,
     "CDI": 4391,
     "IPCA": 433,
     "IGPM": 189,
     "DOLAR_PTAX": 1,
-    # Cooperativismo (series anuais, dados ate 2018)
+    # Cooperativismo (séries anuais, dados até 2018)
     "COOP_QTD": 24869,           # Quantidade de cooperativas
-    "COOP_CREDITO_PF": 25518,    # Saldo credito PF cooperativas
-    "COOP_CREDITO_PJ": 25519,    # Saldo credito PJ cooperativas
-    "COOP_DEPOSITOS_PF": 25517,  # Depositos a vista PF cooperativas
+    "COOP_CREDITO_PF": 25518,    # Saldo crédito PF cooperativas
+    "COOP_CREDITO_PJ": 25519,    # Saldo crédito PJ cooperativas
+    "COOP_DEPOSITOS_PF": 25517,  # Depósitos à vista PF cooperativas
     "COOP_CENTRAL": 25509,       # Cooperativas centrais
     "COOP_SINGULAR": 25510,      # Cooperativas singulares
 }
@@ -24,34 +24,34 @@ SGS = {
 # === BCB IF.data ===
 IFDATA_BASE_URL = "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata"
 IFDATA_RELATORIOS = {
-    "RESUMO": 1,           # Resumo (Ativo Total, PL, Carteira Credito, etc.)
+    "RESUMO": 1,           # Resumo (Ativo Total, PL, Carteira Crédito, etc.)
     "ATIVO": 2,             # Ativo
-    "PASSIVO": 3,           # Passivo (depositos, captacao)
-    "DRE": 4,               # Demonstracao de Resultado
-    "INFO_CAPITAL": 5,      # Informacoes de Capital (Basileia, etc.)
-    "SEGMENTACAO": 6,       # Segmentacao
-    "CREDITO_PF": 11,       # Carteira de credito ativa PF - modalidade e prazo
-    "CREDITO_PJ": 13,       # Carteira de credito ativa PJ - modalidade e prazo
+    "PASSIVO": 3,           # Passivo (depósitos, captação)
+    "DRE": 4,               # Demonstração de Resultado
+    "INFO_CAPITAL": 5,      # Informações de Capital (Basileia, etc.)
+    "SEGMENTACAO": 6,       # Segmentação
+    "CREDITO_PF": 11,       # Carteira de crédito ativa PF - modalidade e prazo
+    "CREDITO_PJ": 13,       # Carteira de crédito ativa PJ - modalidade e prazo
 }
 
-# Tipos de instituicao IF.data (parametro TipoInstituicao)
+# Tipos de instituição IF.data (parâmetro TipoInstituicao)
 IFDATA_TIPO = {
     "CONGL_PRUDENCIAL": 1,  # Conglomerados Prudenciais e Inst. Independentes
     "CONGL_FINANCEIRO": 2,  # Conglomerados Financeiros e Inst. Independentes
-    "INDIVIDUAL": 3,        # Instituicoes Individuais
-    "CAMBIO": 4,            # Instituicoes com Operacoes de Cambio
+    "INDIVIDUAL": 3,        # Instituições Individuais
+    "CAMBIO": 4,            # Instituições com Operações de Câmbio
 }
 
 # === BCB BcBase (cadastro cooperativas) ===
 BCBASE_URL = "https://olinda.bcb.gov.br/olinda/servico/BcBase/versao/v2/odata"
 
-# === BCB Instituicoes em funcionamento ===
+# === BCB Instituições em funcionamento ===
 INSTITUICOES_URL = "https://olinda.bcb.gov.br/olinda/servico/Instituicoes_em_funcionamento/versao/v2/odata"
 
 # === ANTT RNTRC ===
 ANTT_BASE_URL = "https://dados.antt.gov.br/dataset/rntrc"
 ANTT_VEICULOS_CSV = "https://dados.antt.gov.br/dataset/2b564396-5593-4b5c-ba2c-3de3fa0a92c0/resource/4baf37f1-ac1b-413b-901d-8552a0575605/download/rntrc-veiculos.csv"
-# Transportadores: URL dinamica via CKAN API (muda mensalmente)
+# Transportadores: URL dinâmica via CKAN API (muda mensalmente)
 ANTT_TRANSPORTADORES_CKAN = "https://dados.antt.gov.br/api/3/action/package_show?id=rntrc"
 
 # === ANP Diesel ===
@@ -81,7 +81,7 @@ PALETA_SEQUENCIAL = [
     "#E377C2", "#7F7F7F",
 ]
 
-# === Layout padrao Plotly ===
+# === Layout padrão Plotly ===
 LAYOUT_PADRAO = dict(
     font=dict(family="Arial, sans-serif", size=12),
     plot_bgcolor="white",
