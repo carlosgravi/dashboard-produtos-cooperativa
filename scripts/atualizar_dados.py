@@ -250,6 +250,24 @@ def buscar_e_salvar_ifdata_evolucao():
 # 4. IF.data Ranking (todas as cooperativas)
 # ============================================================
 
+def _buscar_cadastro_cooperativas(data_base):
+    """Busca cadastro IF.data e retorna mapeamento CodInst -> NomeInstituicao para cooperativas."""
+    url = (
+        f"{IFDATA_BASE}/IfDataCadastro(AnoMes=@AnoMes)"
+        f"?@AnoMes={data_base}"
+        f"&$format=json&$top=10000"
+    )
+    resp = requests.get(url, timeout=120)
+    resp.raise_for_status()
+    registros = resp.json().get("value", [])
+    # Filtrar apenas cooperativas de credito
+    mapa = {}
+    for r in registros:
+        if "Cooperativa" in str(r.get("SegmentoTb", "")):
+            mapa[r["CodInst"]] = r["NomeInstituicao"]
+    return mapa
+
+
 def buscar_e_salvar_ifdata_ranking():
     """Busca relatorio 1 de TODAS as cooperativas (para ranking)."""
     print("\n=== IF.data Ranking (todas as cooperativas) ===")
@@ -258,11 +276,49 @@ def buscar_e_salvar_ifdata_ranking():
     print(f"  Data-base: {data_base}")
 
     try:
-        df = _buscar_ifdata(1, data_base, cnpj_8=None, timeout=600)
-        if not df.empty:
+        # 1. Buscar cadastro para obter nomes e filtrar cooperativas
+        print("  Buscando cadastro de instituicoes...")
+        mapa_nomes = _buscar_cadastro_cooperativas(data_base)
+        print(f"  Cooperativas no cadastro: {len(mapa_nomes)}")
+
+        # 2. Buscar valores (instituicoes individuais = tipo 3)
+        print("  Buscando dados financeiros (instituicoes individuais)...")
+        url = (
+            f"{IFDATA_BASE}/IfDataValores(AnoMes=@AnoMes,TipoInstituicao=@TipoInstituicao,"
+            f"Relatorio=@Relatorio)"
+            f"?@AnoMes={data_base}&@TipoInstituicao=3"
+            f"&@Relatorio=%271%27"
+            f"&$format=json&$top=100000"
+        )
+        resp = requests.get(url, timeout=600)
+        resp.raise_for_status()
+        registros = resp.json().get("value", [])
+        print(f"  Total registros recebidos: {len(registros)}")
+
+        if not registros:
+            print("  [VAZIO] ifdata_todas_cooperativas.json")
+            return
+
+        # 3. Filtrar apenas cooperativas e adicionar nome
+        coop_codigos = set(mapa_nomes.keys())
+        registros_coops = []
+        for r in registros:
+            if r.get("CodInst") in coop_codigos:
+                r["NomeInstituicao"] = mapa_nomes[r["CodInst"]]
+                registros_coops.append(r)
+
+        print(f"  Registros de cooperativas: {len(registros_coops)}")
+
+        if registros_coops:
+            df = pd.DataFrame(registros_coops)
+            if "Saldo" in df.columns:
+                df["Valor"] = pd.to_numeric(df["Saldo"], errors="coerce")
+            if "NomeConta" not in df.columns:
+                if "NomeColuna" in df.columns:
+                    df["NomeConta"] = df["NomeColuna"]
             _salvar_json("bcb", "ifdata_todas_cooperativas.json", df.to_dict(orient="records"))
         else:
-            print("  [VAZIO] ifdata_todas_cooperativas.json")
+            print("  [VAZIO] ifdata_todas_cooperativas.json (nenhuma cooperativa encontrada)")
     except Exception as e:
         print(f"  [ERRO] ifdata_todas_cooperativas.json: {e}")
 

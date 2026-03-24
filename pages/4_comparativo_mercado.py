@@ -18,7 +18,7 @@ st.markdown(
 df_todas = buscar_ifdata_valores(
     relatorio=IFDATA_RELATORIOS["RESUMO"],
     cnpj_8=None,
-    tipo_instituicao="Cooperativas",
+    tipo_instituicao=3,
     timeout=300,
 )
 
@@ -47,7 +47,7 @@ df_ativo = df_ativo.dropna(subset=["Valor"])
 
 # Identificar coluna de nome da instituicao
 col_nome = None
-for c in ["NomeInst", "Instituicao", "Nome", "RazaoSocial"]:
+for c in ["NomeInstituicao", "NomeInst", "Instituicao", "Nome", "RazaoSocial"]:
     if c in df_ativo.columns:
         col_nome = c
         break
@@ -104,8 +104,30 @@ st.markdown("---")
 st.subheader("Top 20 Cooperativas por Ativo Total")
 
 df_top20 = df_ranking.head(20).copy()
+
+
+def _nome_curto(nome):
+    """Extrai nome curto/marca a partir do nome completo da cooperativa."""
+    import re
+    if " - " in str(nome):
+        candidato = str(nome).split(" - ")[-1].strip()
+        if len(candidato) >= 3:
+            return candidato[:40]
+    limpo = re.sub(
+        r"COOPERATIVA\s+(CENTRAL\s+)?(DE\s+)?(ECONOMIA\s+E\s+)?(CR[EÉ]DITO|CREDITO)\s*,?\s*",
+        "", str(nome), flags=re.IGNORECASE,
+    )
+    limpo = re.sub(r",?\s*POUPAN[CÇ]A\s+E\s+INVESTIMENTO", "", limpo, flags=re.IGNORECASE)
+    limpo = re.sub(
+        r"CENTRAL\s+DAS\s+COOPERATIVAS\s+DE\s+ECONOMIA\s+E\s+CREDITO\s+",
+        "", limpo, flags=re.IGNORECASE,
+    )
+    limpo = re.sub(r"\s*-?\s*LTDA\.?", "", limpo, flags=re.IGNORECASE)
+    return limpo.strip(" -,")[:40]
+
+
 if col_nome:
-    df_top20["Label"] = df_top20[col_nome].str[:30]
+    df_top20["Label"] = df_top20[col_nome].apply(_nome_curto)
 elif col_cod:
     df_top20["Label"] = df_top20[col_cod]
 else:
