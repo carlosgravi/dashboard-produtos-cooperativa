@@ -14,6 +14,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "empresas
 UF_DIR = os.path.join(DATA_DIR, "uf")
 CENTROIDES_PATH = os.path.join(DATA_DIR, "municipios_centroides.json")
 CEP5_PATH = os.path.join(DATA_DIR, "cep5_coordenadas.json")
+CEP_PATH = os.path.join(DATA_DIR, "cep_coordenadas.json")
 
 
 def _carregar_json(arquivo):
@@ -135,6 +136,15 @@ def _carregar_cep5():
 
 
 @st.cache_data(ttl=86400)
+def _carregar_cep_coords():
+    """Carrega mapeamento CEP-8 -> [lat, lon] (logradouro)."""
+    if os.path.exists(CEP_PATH):
+        with open(CEP_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+@st.cache_data(ttl=86400)
 def carregar_empresas_uf(uf):
     """Carrega empresas individuais de uma UF (.json.gz ou .json).
 
@@ -164,15 +174,24 @@ def carregar_empresas_uf(uf):
     if "lat" not in df.columns or "lon" not in df.columns or "cep" not in df.columns:
         return df
 
-    # 1) Coordenadas por CEP-5 (bairro/distrito - mais preciso)
-    cep5_coords = _carregar_cep5()
+    # 1) Coordenadas por CEP completo (logradouro - mais preciso)
+    cep_coords = _carregar_cep_coords()
     sem_coord = df["lat"].isna() | df["lon"].isna()
-    if sem_coord.any() and cep5_coords:
-        cep5 = df.loc[sem_coord, "cep"].astype(str).str[:5]
-        df.loc[sem_coord, "lat"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[0])
-        df.loc[sem_coord, "lon"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[1])
+    if sem_coord.any() and cep_coords:
+        cep8 = df.loc[sem_coord, "cep"].astype(str).str[:8]
+        df.loc[sem_coord, "lat"] = cep8.map(lambda k: (cep_coords.get(k) or [None, None])[0])
+        df.loc[sem_coord, "lon"] = cep8.map(lambda k: (cep_coords.get(k) or [None, None])[1])
 
-    # 2) Fallback: centroide do municipio (para CEPs sem geocodificacao)
+    # 2) Fallback: CEP-5 (bairro/distrito)
+    sem_coord = df["lat"].isna() | df["lon"].isna()
+    if sem_coord.any():
+        cep5_coords = _carregar_cep5()
+        if cep5_coords:
+            cep5 = df.loc[sem_coord, "cep"].astype(str).str[:5]
+            df.loc[sem_coord, "lat"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[0])
+            df.loc[sem_coord, "lon"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[1])
+
+    # 3) Fallback: centroide do municipio
     sem_coord = df["lat"].isna() | df["lon"].isna()
     if sem_coord.any() and "municipio" in df.columns:
         centroides = _carregar_centroides()
@@ -181,13 +200,13 @@ def carregar_empresas_uf(uf):
             df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
             df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
 
-    # 3) Pequeno jitter para nao empilhar empresas no mesmo CEP-5 (~500m)
+    # 4) Pequeno jitter para nao empilhar empresas no mesmo ponto (~200m)
     tem_coord = df["lat"].notna() & df["lon"].notna()
     n = tem_coord.sum()
     if n > 0:
         rng = np.random.default_rng(42)
-        df.loc[tem_coord, "lat"] = df.loc[tem_coord, "lat"].astype(float) + rng.uniform(-0.004, 0.004, size=n)
-        df.loc[tem_coord, "lon"] = df.loc[tem_coord, "lon"].astype(float) + rng.uniform(-0.004, 0.004, size=n)
+        df.loc[tem_coord, "lat"] = df.loc[tem_coord, "lat"].astype(float) + rng.uniform(-0.002, 0.002, size=n)
+        df.loc[tem_coord, "lon"] = df.loc[tem_coord, "lon"].astype(float) + rng.uniform(-0.002, 0.002, size=n)
 
     return df
 
