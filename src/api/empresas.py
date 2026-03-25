@@ -13,6 +13,7 @@ from src.utils.constants import CATEGORIAS_EMPRESAS
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "empresas")
 UF_DIR = os.path.join(DATA_DIR, "uf")
 CENTROIDES_PATH = os.path.join(DATA_DIR, "municipios_centroides.json")
+CEP5_PATH = os.path.join(DATA_DIR, "cep5_coordenadas.json")
 
 
 def _carregar_json(arquivo):
@@ -125,14 +126,23 @@ def _carregar_centroides():
 
 
 @st.cache_data(ttl=86400)
+def _carregar_cep5():
+    """Carrega mapeamento CEP-5 -> [lat, lon]."""
+    if os.path.exists(CEP5_PATH):
+        with open(CEP5_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+@st.cache_data(ttl=86400)
 def carregar_empresas_uf(uf):
     """Carrega empresas individuais de uma UF (.json.gz ou .json).
 
-    Preenche lat/lon faltantes com centroide do municipio.
+    Preenche lat/lon: CEP-5 geocodificado > centroide municipio > vazio.
+    Pequeno jitter para empresas no mesmo CEP-5.
     """
     df = pd.DataFrame()
 
-    # Tentar gzip primeiro (menor, mais rapido para ler do disco)
     caminho_gz = os.path.join(UF_DIR, f"{uf}.json.gz")
     if os.path.exists(caminho_gz):
         with gzip.open(caminho_gz, "rt", encoding="utf-8") as f:
@@ -151,44 +161,33 @@ def carregar_empresas_uf(uf):
     if df.empty:
         return df
 
-    # Preencher coordenadas faltantes com centroide do municipio (vetorizado)
-    if "lat" in df.columns and "lon" in df.columns and "municipio" in df.columns:
-        sem_coord = df["lat"].isna() | df["lon"].isna()
-        if sem_coord.any():
-            centroides = _carregar_centroides()
-            if centroides:
-                chaves = df.loc[sem_coord, "municipio"].astype(str) + "|" + df.loc[sem_coord, "uf"].astype(str)
-                df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
-                df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
+    if "lat" not in df.columns or "lon" not in df.columns or "cep" not in df.columns:
+        return df
 
-        # Espalhar empresas usando CEP para posicionamento deterministico
-        # CEPs proximos ficam perto no mapa (mesma vizinhanca)
-        tem_coord = df["lat"].notna() & df["lon"].notna()
-        if tem_coord.any() and "cep" in df.columns:
-            idx = df.index[tem_coord]
-            cep_num = pd.to_numeric(df.loc[idx, "cep"], errors="coerce").fillna(0)
+    # 1) Coordenadas por CEP-5 (bairro/distrito - mais preciso)
+    cep5_coords = _carregar_cep5()
+    sem_coord = df["lat"].isna() | df["lon"].isna()
+    if sem_coord.any() and cep5_coords:
+        cep5 = df.loc[sem_coord, "cep"].astype(str).str[:5]
+        df.loc[sem_coord, "lat"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[0])
+        df.loc[sem_coord, "lon"] = cep5.map(lambda k: cep5_coords.get(k, [None, None])[1])
 
-            # Para cada municipio, normalizar CEP em [0,1] e distribuir em espiral
-            for mun in df.loc[idx, "municipio"].unique():
-                mask_mun = (df.loc[idx, "municipio"] == mun)
-                idx_mun = idx[mask_mun]
-                if len(idx_mun) <= 1:
-                    continue
+    # 2) Fallback: centroide do municipio (para CEPs sem geocodificacao)
+    sem_coord = df["lat"].isna() | df["lon"].isna()
+    if sem_coord.any() and "municipio" in df.columns:
+        centroides = _carregar_centroides()
+        if centroides:
+            chaves = df.loc[sem_coord, "municipio"].astype(str) + "|" + df.loc[sem_coord, "uf"].astype(str)
+            df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
+            df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
 
-                ceps = cep_num.loc[idx_mun]
-                cep_min, cep_max = ceps.min(), ceps.max()
-                if cep_max == cep_min:
-                    # Todos mesmo CEP - pequeno jitter aleatorio
-                    rng = np.random.default_rng(int(cep_min) % (2**31))
-                    df.loc[idx_mun, "lat"] = df.loc[idx_mun, "lat"].astype(float) + rng.uniform(-0.008, 0.008, size=len(idx_mun))
-                    df.loc[idx_mun, "lon"] = df.loc[idx_mun, "lon"].astype(float) + rng.uniform(-0.008, 0.008, size=len(idx_mun))
-                else:
-                    # Normalizar CEP e distribuir em espiral (~5km raio)
-                    t = (ceps - cep_min) / (cep_max - cep_min)  # [0, 1]
-                    angulo = t * 6 * np.pi  # ~3 voltas na espiral
-                    raio = 0.005 + t * 0.035  # 0.5km a 4km do centro
-                    df.loc[idx_mun, "lat"] = df.loc[idx_mun, "lat"].astype(float) + raio * np.cos(angulo)
-                    df.loc[idx_mun, "lon"] = df.loc[idx_mun, "lon"].astype(float) + raio * np.sin(angulo)
+    # 3) Pequeno jitter para nao empilhar empresas no mesmo CEP-5 (~500m)
+    tem_coord = df["lat"].notna() & df["lon"].notna()
+    n = tem_coord.sum()
+    if n > 0:
+        rng = np.random.default_rng(42)
+        df.loc[tem_coord, "lat"] = df.loc[tem_coord, "lat"].astype(float) + rng.uniform(-0.004, 0.004, size=n)
+        df.loc[tem_coord, "lon"] = df.loc[tem_coord, "lon"].astype(float) + rng.uniform(-0.004, 0.004, size=n)
 
     return df
 
