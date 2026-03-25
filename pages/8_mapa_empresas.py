@@ -247,6 +247,20 @@ if not df_mapa.empty:
     categorias_presentes = df_kepler["categoria"].unique().tolist()
     categorias_presentes = [c for c in categorias_presentes if c]
 
+    # CSS para mapa full-width (extrapola o container do Streamlit)
+    st.markdown("""<style>
+        .stMainBlockContainer [data-testid="stHtml"] {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100vw;
+            max-width: 100vw;
+        }
+        .stMainBlockContainer [data-testid="stHtml"] iframe {
+            width: 100% !important;
+        }
+    </style>""", unsafe_allow_html=True)
+
     # Construir mapa Kepler.gl
     config = _build_kepler_config(uf_sel, categorias_presentes)
     kepler_static(data={"empresas": df_kepler}, config=config, height=650)
