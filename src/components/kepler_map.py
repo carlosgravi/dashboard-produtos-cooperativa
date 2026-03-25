@@ -76,4 +76,4 @@ def kepler_static(
         + template[k + 6:]
     )
 
-    components.html(injected, height=height + 10)
+    components.html(injected, width=0, height=height + 10)
