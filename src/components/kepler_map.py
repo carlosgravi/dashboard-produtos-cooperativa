@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
-import streamlit.components.v1 as components
+import streamlit as st
 
 _TEMPLATE_PATH = Path(__file__).parent.parent / "static" / "keplergl.html"
 _TEMPLATE_CACHE: str | None = None
@@ -76,4 +76,4 @@ def kepler_static(
         + template[k + 6:]
     )
 
-    components.html(injected, height=height + 10)
+    st.html(injected, height=height + 10)
