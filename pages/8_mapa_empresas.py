@@ -88,6 +88,11 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                                     ],
                                 },
                             },
+                            "colorField": {
+                                "name": "categoria",
+                                "type": "string",
+                            },
+                            "colorScale": "ordinal",
                         },
                         "visualChannels": {
                             "colorField": {
