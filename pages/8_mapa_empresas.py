@@ -59,8 +59,8 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "filters": [],
                 "layers": [
                     {
-                        "id": "empresas_hex",
-                        "type": "hexagon",
+                        "id": "empresas_icon",
+                        "type": "icon",
                         "config": {
                             "dataId": "empresas",
                             "label": "Empresas",
@@ -68,32 +68,35 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                             "columns": {
                                 "lat": "lat",
                                 "lng": "lon",
+                                "icon": "icon",
                             },
                             "isVisible": True,
                             "visConfig": {
-                                "opacity": 0.8,
-                                "worldUnitSize": 5,
-                                "resolution": 8,
+                                "radius": 20,
+                                "fixedRadius": False,
+                                "opacity": 0.9,
                                 "colorRange": {
-                                    "name": "Global Warming",
-                                    "type": "sequential",
-                                    "category": "Uber",
+                                    "name": "Categorias",
+                                    "type": "custom",
+                                    "category": "custom",
                                     "colors": [
-                                        "#5A1846", "#900C3F",
-                                        "#C70039", "#E3611C",
-                                        "#F1920E", "#FFC300",
+                                        "#{:02x}{:02x}{:02x}".format(*c) for c in color_range
                                     ],
                                 },
-                                "coverage": 0.95,
-                                "sizeRange": [0, 500],
-                                "elevationScale": 20,
-                                "enableElevationZoomFactor": True,
-                                "enable3d": True,
+                                "radiusRange": [5, 30],
                             },
+                            "colorField": {
+                                "name": "categoria",
+                                "type": "string",
+                            },
+                            "colorScale": "ordinal",
                         },
                         "visualChannels": {
-                            "colorField": None,
-                            "colorScale": "quantile",
+                            "colorField": {
+                                "name": "categoria",
+                                "type": "string",
+                            },
+                            "colorScale": "ordinal",
                             "sizeField": None,
                             "sizeScale": "linear",
                         },
@@ -125,9 +128,9 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "latitude": centro["lat"],
                 "longitude": centro["lon"],
                 "zoom": centro["zoom"],
-                "bearing": 24,
-                "pitch": 45,
-                "dragRotate": True,
+                "bearing": 0,
+                "pitch": 0,
+                "dragRotate": False,
             },
             "mapStyle": {
                 "styleType": "voyager",
@@ -232,6 +235,9 @@ if not df_mapa.empty:
                       "porte_desc", "telefone", "email", "capital_social"]
     colunas_kepler = [c for c in colunas_kepler if c in df_mapa.columns]
     df_kepler = df_mapa[colunas_kepler].copy()
+
+    # Coluna icon para o layer icon do Kepler.gl
+    df_kepler["icon"] = "default"
 
     # Preencher NaN com string vazia para tooltips limpos
     for col in df_kepler.columns:
