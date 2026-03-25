@@ -137,8 +137,10 @@ with tab_captacao:
                     y=-0.15,
                     xanchor="center",
                     x=0.5,
+                    font=dict(size=11),
                 ),
-                margin=dict(b=100),
+                margin=dict(b=180),
+                height=550,
             )
             st.plotly_chart(fig, use_container_width=True)
     else:
