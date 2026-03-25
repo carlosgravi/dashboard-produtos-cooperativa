@@ -75,8 +75,8 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                                 "radius": 12,
                                 "fixedRadius": False,
                                 "opacity": 0.85,
-                                "outline": True,
-                                "thickness": 1.5,
+                                "outline": False,
+                                "thickness": 0,
                                 "filled": True,
                                 "radiusRange": [4, 25],
                                 "colorRange": {
