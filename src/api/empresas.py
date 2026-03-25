@@ -1,5 +1,6 @@
 """API para carregar dados de empresas de transporte/logística/correios."""
 
+import gzip
 import json
 import os
 
@@ -100,19 +101,29 @@ def filtrar_municipios(df, categoria=None, uf=None, fonte=None):
 
 @st.cache_data(ttl=86400)
 def listar_ufs_com_dados_individuais():
-    """Lista UFs que possuem data/empresas/uf/{UF}.json."""
+    """Lista UFs que possuem data/empresas/uf/{UF}.json ou .json.gz."""
     if not os.path.isdir(UF_DIR):
         return []
-    ufs = []
+    ufs = set()
     for f in os.listdir(UF_DIR):
-        if f.endswith(".json") and len(f) == 7:  # "SC.json" = 7 chars
-            ufs.append(f.replace(".json", ""))
+        if f.endswith(".json.gz") and len(f) == 10:  # "SC.json.gz" = 10 chars
+            ufs.add(f.replace(".json.gz", ""))
+        elif f.endswith(".json") and len(f) == 7:  # "SC.json" = 7 chars
+            ufs.add(f.replace(".json", ""))
     return sorted(ufs)
 
 
 @st.cache_data(ttl=86400)
 def carregar_empresas_uf(uf):
-    """Carrega empresas individuais de uma UF. Retorna DataFrame."""
+    """Carrega empresas individuais de uma UF (.json.gz ou .json)."""
+    # Tentar gzip primeiro (menor, mais rapido para ler do disco)
+    caminho_gz = os.path.join(UF_DIR, f"{uf}.json.gz")
+    if os.path.exists(caminho_gz):
+        with gzip.open(caminho_gz, "rt", encoding="utf-8") as f:
+            dados = json.load(f)
+        if dados:
+            return pd.DataFrame(dados)
+
     caminho = os.path.join(UF_DIR, f"{uf}.json")
     if os.path.exists(caminho):
         with open(caminho, "r", encoding="utf-8") as f:

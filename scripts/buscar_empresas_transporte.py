@@ -19,6 +19,7 @@ Execução:
 """
 
 import argparse
+import gzip
 import json
 import os
 import sys
@@ -552,7 +553,14 @@ def salvar_uf(project_id, uf):
     print(f"  Total {uf}: {len(df):,} empresas")
 
     registros = df.to_dict(orient="records")
-    _salvar_json(f"{uf}.json", registros, diretorio=UF_DIR)
+
+    # Salvar como .json.gz (comprimido) para caber no GitHub
+    os.makedirs(UF_DIR, exist_ok=True)
+    caminho_gz = os.path.join(UF_DIR, f"{uf}.json.gz")
+    with gzip.open(caminho_gz, "wt", encoding="utf-8") as f:
+        json.dump(registros, f, ensure_ascii=False, default=str)
+    tamanho_mb = os.path.getsize(caminho_gz) / 1024 / 1024
+    print(f"  [OK] {uf}.json.gz - {len(registros)} registros ({tamanho_mb:.1f} MB)")
 
 
 # ============================================================
