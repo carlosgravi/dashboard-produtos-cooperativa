@@ -37,12 +37,41 @@ def _df_to_dict(df: pd.DataFrame) -> dict:
     return df_copy.to_dict("split")
 
 
+_FULLWIDTH_SCRIPT = """
+<script>
+(function() {
+    // Expand the iframe and its Streamlit parent containers to full viewport width
+    try {
+        var frame = window.frameElement;
+        if (!frame) return;
+        frame.style.width = '100vw';
+        frame.style.maxWidth = '100vw';
+        // Walk up parent elements inside the Streamlit DOM and expand them
+        var el = frame.parentElement;
+        for (var i = 0; i < 6 && el; i++) {
+            el.style.width = '100vw';
+            el.style.maxWidth = '100vw';
+            el.style.position = 'relative';
+            el.style.left = '50%';
+            el.style.transform = 'translateX(-50%)';
+            // Stop at the main block container
+            if (el.classList && (el.classList.contains('stMainBlockContainer') ||
+                el.classList.contains('block-container'))) break;
+            el = el.parentElement;
+        }
+    } catch(e) {}
+})();
+</script>
+"""
+
+
 def kepler_static(
     data: dict[str, pd.DataFrame],
     config: dict,
     height: int = 650,
     read_only: bool = True,
     center_map: bool = False,
+    full_width: bool = False,
 ) -> None:
     """Render a Kepler.gl map in Streamlit.
 
@@ -53,6 +82,7 @@ def kepler_static(
     height : map height in pixels
     read_only : hide side panel
     center_map : auto-fit bounds to data
+    full_width : expand map to full viewport width
     """
     template = _load_template()
     k = template.find("<body>")
@@ -68,11 +98,14 @@ def kepler_static(
         "options": {"readOnly": read_only, "centerMap": center_map},
     })
 
+    fullwidth_inject = _FULLWIDTH_SCRIPT if full_width else ""
+
     injected = (
         template[:k]
         + '<body><script>window.__keplerglDataConfig = '
         + kepler_data
         + ";</script>"
+        + fullwidth_inject
         + template[k + 6:]
     )
 
