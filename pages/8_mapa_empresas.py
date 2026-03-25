@@ -139,6 +139,21 @@ def _build_kepler_config(uf_sel, categorias_presentes):
     }
 
 
+# CSS para mapa full-width (remove padding do container, expande iframe)
+st.markdown("""<style>
+    .stMainBlockContainer .block-container,
+    [data-testid="stAppViewBlockContainer"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        max-width: 100% !important;
+    }
+    [data-testid="stCustomComponentV1"],
+    [data-testid="stCustomComponentV1"] iframe,
+    .element-container iframe {
+        width: 100% !important;
+    }
+</style>""", unsafe_allow_html=True)
+
 st.header("Mapa de Empresas de Transporte, Logistica e Correios")
 st.markdown("Geolocalizacao de empresas do setor por CNAE (Receita Federal).")
 
@@ -250,7 +265,7 @@ if not df_mapa.empty:
 
     # Construir mapa Kepler.gl
     config = _build_kepler_config(uf_sel, categorias_presentes)
-    kepler_static(data={"empresas": df_kepler}, config=config, height=650)
+    kepler_static(data={"empresas": df_kepler}, config=config, height=700, read_only=False)
 
     if len(df_mapa) < total:
         st.caption(f"Exibindo {formatar_numero(len(df_mapa))} de {formatar_numero(total)} empresas (apenas com coordenadas).")
