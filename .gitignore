@@ -17,5 +17,11 @@ data/empresas/uf/
 data/empresas/geocode_cache.json
 data/empresas/empresas_transporte.json
 
+# Dados de compliance (gerados pelo script)
+data/empresas/compliance/
+
+# Secrets
+.env
+
 # Claude
 .claude/

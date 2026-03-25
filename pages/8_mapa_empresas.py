@@ -177,7 +177,8 @@ if modo_detail:
                         f"CNAE: {row.get('cnae_desc', '—')}<br>"
                         f"End: {row.get('endereco', '—')}<br>"
                         f"CEP: {row.get('cep', '—')}<br>"
-                        f"Fonte: {row.get('fonte', '—')}"
+                        f"Porte: {row.get('porte_desc', '—')}<br>"
+                        f"Capital: R$ {row.get('capital_social', 0):,.0f}".replace(",", ".") + ""
                     )
                     data.append([row["lat"], row["lon"], popup])
                 FastMarkerCluster(data=data, callback=callback).add_to(m)
@@ -192,7 +193,8 @@ if modo_detail:
                         f"CNAE: {row.get('cnae_desc', '—')}<br>"
                         f"End: {row.get('endereco', '—')}<br>"
                         f"CEP: {row.get('cep', '—')}<br>"
-                        f"Fonte: {row.get('fonte', '—')}"
+                        f"Porte: {row.get('porte_desc', '—')}<br>"
+                        f"Capital: R$ {row.get('capital_social', 0):,.0f}".replace(",", ".") + ""
                     )
                     folium.Marker(
                         location=[row["lat"], row["lon"]],
@@ -224,7 +226,8 @@ if modo_detail:
     # === Tabela de empresas individuais ===
     st.subheader(f"Empresas em {uf_sel}")
 
-    colunas_exibir = ["nome", "cnpj", "categoria", "endereco", "cep", "municipio", "fonte"]
+    colunas_exibir = ["nome", "cnpj", "categoria", "porte_desc", "nat_juridica_desc",
+                       "capital_social", "endereco", "cep", "municipio"]
     colunas_exibir = [c for c in colunas_exibir if c in df_detail.columns]
     df_exibir = df_detail[colunas_exibir].copy()
 
@@ -232,10 +235,12 @@ if modo_detail:
         "nome": "Nome",
         "cnpj": "CNPJ",
         "categoria": "Categoria",
+        "porte_desc": "Porte",
+        "nat_juridica_desc": "Nat. Jurídica",
+        "capital_social": "Capital Social",
         "endereco": "Endereço",
         "cep": "CEP",
         "municipio": "Município",
-        "fonte": "Fonte",
     }
     df_exibir = df_exibir.rename(columns=renames)
 

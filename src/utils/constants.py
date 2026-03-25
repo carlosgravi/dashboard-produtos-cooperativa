@@ -184,3 +184,15 @@ AWESOMEAPI_CEP_URL = "https://cep.awesomeapi.com.br/json/{cep}"
 
 # === IBGE Municípios (coordenadas) ===
 IBGE_MUNICIPIOS_URL = "https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/csv/municipios.csv"
+
+# === CGU Portal da Transparência (CEIS/CNEP) ===
+CGU_CEIS_URL = "https://api.portaldatransparencia.gov.br/api-de-dados/ceis"
+CGU_CNEP_URL = "https://api.portaldatransparencia.gov.br/api-de-dados/cnep"
+# Requer header: chave-api-dados (cadastro gratuito em api.portaldatransparencia.gov.br)
+
+# === PNCP (Portal Nacional de Contratações Públicas) ===
+PNCP_SEARCH_URL = "https://pncp.gov.br/api/search"
+# Sem autenticação. API /consulta/v1/contratos não filtra por fornecedor.
+
+# === Consumidor.gov.br (dados abertos) ===
+CONSUMIDOR_GOV_DADOS_URL = "https://dados.gov.br/dados/conjuntos-dados/reclamacoes-do-consumidor-gov-br"

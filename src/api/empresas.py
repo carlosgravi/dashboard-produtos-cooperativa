@@ -146,3 +146,42 @@ def filtrar_empresas_individuais(df, categoria=None, municipio=None, busca=None)
             df_f = df_f[mask]
 
     return df_f
+
+
+def filtrar_empresas_avancado(df, categoria=None, municipio=None, porte=None,
+                               capital_min=None, capital_max=None, busca=None):
+    """Filtra empresas por categoria, município, porte, capital social e texto."""
+    if df.empty:
+        return df
+
+    df_f = df.copy()
+
+    if categoria and categoria != "Todas":
+        df_f = df_f[df_f["categoria"] == categoria]
+
+    if municipio and municipio != "Todos":
+        df_f = df_f[df_f["municipio"] == municipio]
+
+    if porte:
+        df_f = df_f[df_f["porte_desc"].isin(porte)]
+
+    if capital_min is not None and capital_min > 0:
+        df_f = df_f[pd.to_numeric(df_f["capital_social"], errors="coerce").fillna(0) >= capital_min]
+
+    if capital_max is not None and capital_max > 0:
+        df_f = df_f[pd.to_numeric(df_f["capital_social"], errors="coerce").fillna(0) <= capital_max]
+
+    if busca:
+        busca = busca.strip()
+        if busca:
+            cols_busca = ["nome", "cnpj", "endereco"]
+            if "nome_fantasia" in df_f.columns:
+                cols_busca.append("nome_fantasia")
+            if "email" in df_f.columns:
+                cols_busca.append("email")
+            mask = pd.Series(False, index=df_f.index)
+            for col in cols_busca:
+                mask = mask | df_f[col].astype(str).str.contains(busca, case=False, na=False)
+            df_f = df_f[mask]
+
+    return df_f

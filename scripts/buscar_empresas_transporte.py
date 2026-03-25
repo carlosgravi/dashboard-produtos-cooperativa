@@ -178,7 +178,7 @@ def buscar_empresas_bigquery_uf(project_id, uf):
         FROM `basedosdados.br_me_cnpj.estabelecimentos`
     ),
     emp_recente AS (
-        SELECT cnpj_basico, razao_social
+        SELECT cnpj_basico, razao_social, porte, natureza_juridica, capital_social
         FROM `basedosdados.br_me_cnpj.empresas`
         WHERE data = (SELECT MAX(data) FROM `basedosdados.br_me_cnpj.empresas`)
     ),
@@ -189,14 +189,23 @@ def buscar_empresas_bigquery_uf(project_id, uf):
     SELECT
         e.cnpj,
         COALESCE(emp_recente.razao_social, e.nome_fantasia, '') AS razao_social,
+        e.nome_fantasia,
         e.cnae_fiscal_principal AS cnae,
         e.tipo_logradouro,
         e.logradouro,
         e.numero,
         e.bairro,
         e.cep,
+        e.ddd_1,
+        e.telefone_1,
+        e.ddd_2,
+        e.telefone_2,
+        e.email,
         COALESCE(mun.nome, 'Desconhecido') AS municipio,
-        e.sigla_uf AS uf
+        e.sigla_uf AS uf,
+        emp_recente.porte,
+        emp_recente.natureza_juridica,
+        SAFE_CAST(emp_recente.capital_social AS FLOAT64) AS capital_social
     FROM `basedosdados.br_me_cnpj.estabelecimentos` e
     CROSS JOIN ultima_data ud
     LEFT JOIN emp_recente ON e.cnpj_basico = emp_recente.cnpj_basico
@@ -244,10 +253,43 @@ def buscar_empresas_bigquery_uf(project_id, uf):
 
         df["endereco"] = df.apply(_montar_endereco, axis=1)
 
+        # Montar telefone: "(DDD) NUMERO"
+        def _montar_telefone(row):
+            fones = []
+            for i in ("1", "2"):
+                ddd = str(row.get(f"ddd_{i}", "")).strip()
+                tel = str(row.get(f"telefone_{i}", "")).strip()
+                if tel and tel.lower() not in ("nan", "none", ""):
+                    if ddd and ddd.lower() not in ("nan", "none", ""):
+                        fones.append(f"({ddd}) {tel}")
+                    else:
+                        fones.append(tel)
+            return " / ".join(fones) if fones else ""
+
+        df["telefone"] = df.apply(_montar_telefone, axis=1)
+
+        # Limpar email
+        df["email"] = df["email"].fillna("").astype(str).str.strip()
+        df["email"] = df["email"].apply(lambda x: "" if x.lower() in ("nan", "none") else x)
+
+        # Limpar nome fantasia
+        df["nome_fantasia"] = df["nome_fantasia"].fillna("").astype(str).str.strip()
+        df["nome_fantasia"] = df["nome_fantasia"].apply(lambda x: "" if x.lower() in ("nan", "none") else x)
+
         # Adicionar metadados
         df["cnae_desc"] = df["cnae"].map(CNAES_TRANSPORTE).fillna("Outros")
         df["categoria"] = df["cnae"].apply(_cnae_para_categoria)
         df["fonte"] = "RFB"
+
+        # Mapear porte e natureza jurídica
+        portes = {"1": "Micro Empresa", "3": "Pequeno Porte", "5": "Demais", "0": "Não informado"}
+        nat_juridicas = {
+            "2135": "MEI", "2062": "Ltda", "2054": "S.A.",
+            "2046": "S.A. Aberta", "2143": "Cooperativa",
+            "2070": "Assoc. Privada", "2127": "EIRELI",
+        }
+        df["porte_desc"] = df["porte"].astype(str).map(portes).fillna("Outro")
+        df["nat_juridica_desc"] = df["natureza_juridica"].astype(str).map(nat_juridicas).fillna("Outro")
 
         # Normalizar CEP
         df["cep"] = df["cep"].astype(str).str.replace(r"\D", "", regex=True).str.zfill(8)
@@ -260,8 +302,11 @@ def buscar_empresas_bigquery_uf(project_id, uf):
         df = df.rename(columns={"razao_social": "nome"})
 
         # Colunas finais
-        colunas = ["cnpj", "nome", "cnae", "cnae_desc", "categoria",
-                    "endereco", "cep", "municipio", "uf", "lat", "lon", "fonte"]
+        colunas = ["cnpj", "nome", "nome_fantasia", "cnae", "cnae_desc", "categoria",
+                    "endereco", "cep", "municipio", "uf",
+                    "telefone", "email",
+                    "porte", "porte_desc", "natureza_juridica", "nat_juridica_desc", "capital_social",
+                    "lat", "lon", "fonte"]
         colunas = [c for c in colunas if c in df.columns]
         return df[colunas]
 
