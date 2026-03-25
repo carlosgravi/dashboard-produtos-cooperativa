@@ -11,6 +11,7 @@ from src.utils.constants import CATEGORIAS_EMPRESAS
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "empresas")
 UF_DIR = os.path.join(DATA_DIR, "uf")
+CENTROIDES_PATH = os.path.join(DATA_DIR, "municipios_centroides.json")
 
 
 def _carregar_json(arquivo):
@@ -114,23 +115,55 @@ def listar_ufs_com_dados_individuais():
 
 
 @st.cache_data(ttl=86400)
+def _carregar_centroides():
+    """Carrega mapeamento municipio|UF -> [lat, lon]."""
+    if os.path.exists(CENTROIDES_PATH):
+        with open(CENTROIDES_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+@st.cache_data(ttl=86400)
 def carregar_empresas_uf(uf):
-    """Carrega empresas individuais de uma UF (.json.gz ou .json)."""
+    """Carrega empresas individuais de uma UF (.json.gz ou .json).
+
+    Preenche lat/lon faltantes com centroide do municipio.
+    """
+    df = pd.DataFrame()
+
     # Tentar gzip primeiro (menor, mais rapido para ler do disco)
     caminho_gz = os.path.join(UF_DIR, f"{uf}.json.gz")
     if os.path.exists(caminho_gz):
         with gzip.open(caminho_gz, "rt", encoding="utf-8") as f:
             dados = json.load(f)
         if dados:
-            return pd.DataFrame(dados)
+            df = pd.DataFrame(dados)
 
-    caminho = os.path.join(UF_DIR, f"{uf}.json")
-    if os.path.exists(caminho):
-        with open(caminho, "r", encoding="utf-8") as f:
-            dados = json.load(f)
-        if dados:
-            return pd.DataFrame(dados)
-    return pd.DataFrame()
+    if df.empty:
+        caminho = os.path.join(UF_DIR, f"{uf}.json")
+        if os.path.exists(caminho):
+            with open(caminho, "r", encoding="utf-8") as f:
+                dados = json.load(f)
+            if dados:
+                df = pd.DataFrame(dados)
+
+    if df.empty:
+        return df
+
+    # Preencher coordenadas faltantes com centroide do municipio
+    if "lat" in df.columns and "lon" in df.columns and "municipio" in df.columns:
+        sem_coord = df["lat"].isna() | df["lon"].isna()
+        if sem_coord.any():
+            centroides = _carregar_centroides()
+            if centroides:
+                for idx in df.index[sem_coord]:
+                    chave = f"{df.at[idx, 'municipio']}|{df.at[idx, 'uf']}"
+                    coord = centroides.get(chave)
+                    if coord:
+                        df.at[idx, "lat"] = coord[0]
+                        df.at[idx, "lon"] = coord[1]
+
+    return df
 
 
 def filtrar_empresas_individuais(df, categoria=None, municipio=None, busca=None):
