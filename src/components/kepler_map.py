@@ -76,9 +76,12 @@ def kepler_static(
         + template[k + 6:]
     )
 
-    # Inject CSS to force 100% width inside the iframe
-    injected = injected.replace(
-        "margin: 0; padding: 0;",
-        "margin: 0; padding: 0; width: 100%; overflow: hidden;",
-    )
+    # Script to resize the iframe from inside (only the iframe, no parent changes)
+    resize_script = """<script>
+(function(){
+    var f = window.frameElement;
+    if(f) f.style.setProperty('width','100%','important');
+})();
+</script>"""
+    injected = injected.replace("</body>", resize_script + "</body>")
     components.html(injected, height=height + 10, scrolling=False)
