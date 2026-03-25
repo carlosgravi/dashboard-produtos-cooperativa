@@ -161,13 +161,34 @@ def carregar_empresas_uf(uf):
                 df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
                 df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
 
-        # Jitter: espalhar empresas no mesmo municipio (~3km de raio)
+        # Espalhar empresas usando CEP para posicionamento deterministico
+        # CEPs proximos ficam perto no mapa (mesma vizinhanca)
         tem_coord = df["lat"].notna() & df["lon"].notna()
-        n = tem_coord.sum()
-        if n > 0:
-            rng = np.random.default_rng(42)
-            df.loc[tem_coord, "lat"] = df.loc[tem_coord, "lat"].astype(float) + rng.uniform(-0.03, 0.03, size=n)
-            df.loc[tem_coord, "lon"] = df.loc[tem_coord, "lon"].astype(float) + rng.uniform(-0.03, 0.03, size=n)
+        if tem_coord.any() and "cep" in df.columns:
+            idx = df.index[tem_coord]
+            cep_num = pd.to_numeric(df.loc[idx, "cep"], errors="coerce").fillna(0)
+
+            # Para cada municipio, normalizar CEP em [0,1] e distribuir em espiral
+            for mun in df.loc[idx, "municipio"].unique():
+                mask_mun = (df.loc[idx, "municipio"] == mun)
+                idx_mun = idx[mask_mun]
+                if len(idx_mun) <= 1:
+                    continue
+
+                ceps = cep_num.loc[idx_mun]
+                cep_min, cep_max = ceps.min(), ceps.max()
+                if cep_max == cep_min:
+                    # Todos mesmo CEP - pequeno jitter aleatorio
+                    rng = np.random.default_rng(int(cep_min) % (2**31))
+                    df.loc[idx_mun, "lat"] = df.loc[idx_mun, "lat"].astype(float) + rng.uniform(-0.008, 0.008, size=len(idx_mun))
+                    df.loc[idx_mun, "lon"] = df.loc[idx_mun, "lon"].astype(float) + rng.uniform(-0.008, 0.008, size=len(idx_mun))
+                else:
+                    # Normalizar CEP e distribuir em espiral (~5km raio)
+                    t = (ceps - cep_min) / (cep_max - cep_min)  # [0, 1]
+                    angulo = t * 6 * np.pi  # ~3 voltas na espiral
+                    raio = 0.005 + t * 0.035  # 0.5km a 4km do centro
+                    df.loc[idx_mun, "lat"] = df.loc[idx_mun, "lat"].astype(float) + raio * np.cos(angulo)
+                    df.loc[idx_mun, "lon"] = df.loc[idx_mun, "lon"].astype(float) + raio * np.sin(angulo)
 
     return df
 
