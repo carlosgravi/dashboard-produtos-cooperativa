@@ -182,7 +182,7 @@ if not df_mapa.empty:
         layers=[layer],
         initial_view_state=view_state,
         tooltip=tooltip,
-        map_style="mapbox://styles/mapbox/light-v11",
+        map_style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
     )
 
     st.pydeck_chart(deck, use_container_width=True, height=650)
