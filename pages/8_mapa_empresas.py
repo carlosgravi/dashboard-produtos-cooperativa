@@ -16,13 +16,13 @@ from src.utils.formatting import formatar_numero
 from src.components.kpi_card import kpi_row
 from src.components.kepler_map import kepler_static
 
-# Cores por categoria (RGB)
+# Cores por categoria (RGB) - cores vibrantes e bem distintas
 CORES_CATEGORIA = {
-    "Transporte de Cargas": [46, 134, 193],
-    "Transporte de Passageiros": [231, 76, 60],
-    "Logistica e Armazenagem": [39, 174, 96],
-    "Correios e Encomendas": [243, 156, 18],
-    "Outros": [149, 165, 166],
+    "Transporte de Cargas": [0, 120, 255],
+    "Transporte de Passageiros": [230, 25, 25],
+    "Logistica e Armazenagem": [15, 190, 75],
+    "Correios e Encomendas": [255, 170, 0],
+    "Outros": [160, 50, 220],
 }
 
 CORES_CATEGORIA_HEX = {
@@ -255,11 +255,12 @@ if not df_mapa.empty:
     if len(df_mapa) < total:
         st.caption(f"Exibindo {formatar_numero(len(df_mapa))} de {formatar_numero(total)} empresas (apenas com coordenadas).")
 
-    # Legenda
+    # Legenda (todas as categorias presentes nos dados filtrados)
+    cats_presentes = df_detail["categoria"].unique() if "categoria" in df_detail.columns else []
     st.markdown("**Legenda:**  " + "  |  ".join(
         f'<span style="color:rgb({c[0]},{c[1]},{c[2]})">&#11044;</span> {cat}'
         for cat, c in CORES_CATEGORIA.items()
-        if cat in df_mapa["categoria"].values
+        if cat in cats_presentes
     ), unsafe_allow_html=True)
 
 else:
