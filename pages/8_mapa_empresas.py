@@ -135,7 +135,7 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "dragRotate": False,
             },
             "mapStyle": {
-                "styleType": "positron",
+                "styleType": "dark-matter",
             },
         },
     }
