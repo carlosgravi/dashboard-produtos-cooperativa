@@ -1,10 +1,9 @@
 """Pagina 8 - Mapa de Empresas de Transporte, Logistica e Correios.
 
-Mapa PyDeck (deck.gl/WebGL) com empresas individuais filtradas por UF.
+Mapa Kepler.gl (deck.gl/WebGL) com empresas individuais filtradas por UF.
 """
 
 import pandas as pd
-import pydeck as pdk
 import streamlit as st
 
 from src.api.empresas import (
@@ -15,6 +14,7 @@ from src.api.empresas import (
 from src.utils.constants import CATEGORIAS_EMPRESAS
 from src.utils.formatting import formatar_numero
 from src.components.kpi_card import kpi_row
+from src.components.kepler_map import kepler_static
 
 # Cores por categoria (RGB)
 CORES_CATEGORIA = {
@@ -25,6 +25,11 @@ CORES_CATEGORIA = {
     "Outros": [149, 165, 166],
 }
 
+CORES_CATEGORIA_HEX = {
+    cat: "#{:02x}{:02x}{:02x}".format(*rgb)
+    for cat, rgb in CORES_CATEGORIA.items()
+}
+
 # Centros aproximados das UFs para zoom inicial
 CENTROS_UF = {
     "SC": {"lat": -27.6, "lon": -50.3, "zoom": 6.5},
@@ -33,6 +38,108 @@ CENTROS_UF = {
     "SP": {"lat": -22.5, "lon": -48.5, "zoom": 5.8},
 }
 DEFAULT_CENTER = {"lat": -27.6, "lon": -50.3, "zoom": 6}
+
+
+def _build_kepler_config(uf_sel, categorias_presentes):
+    """Constroi configuracao do Kepler.gl para o mapa de empresas."""
+    centro = CENTROS_UF.get(uf_sel, DEFAULT_CENTER)
+
+    # Montar domain/range para coloracao por categoria
+    domain = []
+    color_range = []
+    for cat in categorias_presentes:
+        domain.append(cat)
+        rgb = CORES_CATEGORIA.get(cat, [149, 165, 166])
+        color_range.append(rgb)
+
+    return {
+        "version": "v1",
+        "config": {
+            "visState": {
+                "filters": [],
+                "layers": [
+                    {
+                        "id": "empresas_layer",
+                        "type": "point",
+                        "config": {
+                            "dataId": "empresas",
+                            "label": "Empresas",
+                            "color": [46, 134, 193],
+                            "columns": {
+                                "lat": "lat",
+                                "lng": "lon",
+                                "altitude": None,
+                            },
+                            "isVisible": True,
+                            "visConfig": {
+                                "radius": 8,
+                                "fixedRadius": False,
+                                "opacity": 0.8,
+                                "outline": False,
+                                "filled": True,
+                                "radiusRange": [3, 20],
+                                "colorRange": {
+                                    "name": "Categorias",
+                                    "type": "custom",
+                                    "category": "custom",
+                                    "colors": [
+                                        "#{:02x}{:02x}{:02x}".format(*c) for c in color_range
+                                    ],
+                                },
+                            },
+                            "colorField": {
+                                "name": "categoria",
+                                "type": "string",
+                            },
+                            "colorScale": "ordinal",
+                        },
+                        "visualChannels": {
+                            "colorField": {
+                                "name": "categoria",
+                                "type": "string",
+                            },
+                            "colorScale": "ordinal",
+                            "sizeField": None,
+                            "sizeScale": "linear",
+                        },
+                    }
+                ],
+                "interactionConfig": {
+                    "tooltip": {
+                        "fieldsToShow": {
+                            "empresas": [
+                                {"name": "nome", "format": None},
+                                {"name": "cnpj", "format": None},
+                                {"name": "categoria", "format": None},
+                                {"name": "porte_desc", "format": None},
+                                {"name": "municipio", "format": None},
+                                {"name": "telefone", "format": None},
+                                {"name": "email", "format": None},
+                            ]
+                        },
+                        "enabled": True,
+                    },
+                    "brush": {"enabled": False},
+                    "geocoder": {"enabled": False},
+                    "coordinate": {"enabled": False},
+                },
+                "layerBlending": "normal",
+                "splitMaps": [],
+            },
+            "mapState": {
+                "latitude": centro["lat"],
+                "longitude": centro["lon"],
+                "zoom": centro["zoom"],
+                "bearing": 0,
+                "pitch": 0,
+                "dragRotate": False,
+            },
+            "mapStyle": {
+                "styleType": "light",
+            },
+        },
+    }
+
 
 st.header("Mapa de Empresas de Transporte, Logistica e Correios")
 st.markdown("Geolocalizacao de empresas do setor por CNAE (Receita Federal).")
@@ -117,7 +224,7 @@ st.markdown("---")
 
 st.markdown(f"**{formatar_numero(total)} empresas** encontradas em {uf_sel}")
 
-# === Mapa PyDeck ===
+# === Mapa Kepler.gl ===
 df_mapa = df_detail.copy()
 if "lat" in df_mapa.columns and "lon" in df_mapa.columns:
     df_mapa["lat"] = pd.to_numeric(df_mapa["lat"], errors="coerce")
@@ -125,67 +232,24 @@ if "lat" in df_mapa.columns and "lon" in df_mapa.columns:
     df_mapa = df_mapa.dropna(subset=["lat", "lon"])
 
 if not df_mapa.empty:
-    # Atribuir cor RGB por categoria
-    df_mapa["cor"] = df_mapa["categoria"].map(CORES_CATEGORIA).apply(lambda x: x if isinstance(x, list) else [149, 165, 166])
+    # Preparar DataFrame reduzido para Kepler (menos payload)
+    colunas_kepler = ["lat", "lon", "nome", "cnpj", "categoria", "municipio",
+                      "porte_desc", "telefone", "email", "capital_social"]
+    colunas_kepler = [c for c in colunas_kepler if c in df_mapa.columns]
+    df_kepler = df_mapa[colunas_kepler].copy()
 
-    # Tooltip
-    df_mapa["tooltip_nome"] = df_mapa["nome"].fillna("")
-    df_mapa["tooltip_cnpj"] = df_mapa["cnpj"].fillna("")
-    df_mapa["tooltip_cat"] = df_mapa["categoria"].fillna("")
-    df_mapa["tooltip_porte"] = df_mapa.get("porte_desc", pd.Series("", index=df_mapa.index)).fillna("")
-    df_mapa["tooltip_mun"] = df_mapa["municipio"].fillna("")
-    df_mapa["tooltip_tel"] = df_mapa.get("telefone", pd.Series("", index=df_mapa.index)).fillna("")
-    df_mapa["tooltip_email"] = df_mapa.get("email", pd.Series("", index=df_mapa.index)).fillna("")
+    # Preencher NaN com string vazia para tooltips limpos
+    for col in df_kepler.columns:
+        if col not in ("lat", "lon", "capital_social"):
+            df_kepler[col] = df_kepler[col].fillna("")
 
-    # Centro e zoom
-    centro = CENTROS_UF.get(uf_sel, DEFAULT_CENTER)
+    # Categorias presentes para config de cores
+    categorias_presentes = df_kepler["categoria"].unique().tolist()
+    categorias_presentes = [c for c in categorias_presentes if c]
 
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=df_mapa,
-        get_position=["lon", "lat"],
-        get_color="cor",
-        get_radius=600,
-        radius_min_pixels=3,
-        radius_max_pixels=15,
-        pickable=True,
-        auto_highlight=True,
-        highlight_color=[255, 200, 0, 200],
-    )
-
-    view_state = pdk.ViewState(
-        latitude=centro["lat"],
-        longitude=centro["lon"],
-        zoom=centro["zoom"],
-        pitch=0,
-    )
-
-    tooltip = {
-        "html": (
-            "<b>{tooltip_nome}</b><br/>"
-            "CNPJ: {tooltip_cnpj}<br/>"
-            "Categoria: {tooltip_cat}<br/>"
-            "Porte: {tooltip_porte}<br/>"
-            "Municipio: {tooltip_mun}<br/>"
-            "Tel: {tooltip_tel}<br/>"
-            "Email: {tooltip_email}"
-        ),
-        "style": {
-            "backgroundColor": "rgba(0,0,0,0.8)",
-            "color": "white",
-            "fontSize": "12px",
-            "padding": "8px",
-        },
-    }
-
-    deck = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        tooltip=tooltip,
-        map_style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-    )
-
-    st.pydeck_chart(deck, use_container_width=True, height=650)
+    # Construir mapa Kepler.gl
+    config = _build_kepler_config(uf_sel, categorias_presentes)
+    kepler_static(data={"empresas": df_kepler}, config=config, height=650)
 
     if len(df_mapa) < total:
         st.caption(f"Exibindo {formatar_numero(len(df_mapa))} de {formatar_numero(total)} empresas (apenas com coordenadas).")
