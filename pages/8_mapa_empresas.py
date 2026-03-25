@@ -59,8 +59,8 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "filters": [],
                 "layers": [
                     {
-                        "id": "empresas_layer",
-                        "type": "point",
+                        "id": "empresas_hex",
+                        "type": "hexagon",
                         "config": {
                             "dataId": "empresas",
                             "label": "Empresas",
@@ -68,37 +68,32 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                             "columns": {
                                 "lat": "lat",
                                 "lng": "lon",
-                                "altitude": None,
                             },
                             "isVisible": True,
                             "visConfig": {
-                                "radius": 8,
-                                "fixedRadius": False,
                                 "opacity": 0.8,
-                                "outline": False,
-                                "filled": True,
-                                "radiusRange": [3, 20],
+                                "worldUnitSize": 5,
+                                "resolution": 8,
                                 "colorRange": {
-                                    "name": "Categorias",
-                                    "type": "custom",
-                                    "category": "custom",
+                                    "name": "Global Warming",
+                                    "type": "sequential",
+                                    "category": "Uber",
                                     "colors": [
-                                        "#{:02x}{:02x}{:02x}".format(*c) for c in color_range
+                                        "#5A1846", "#900C3F",
+                                        "#C70039", "#E3611C",
+                                        "#F1920E", "#FFC300",
                                     ],
                                 },
+                                "coverage": 0.95,
+                                "sizeRange": [0, 500],
+                                "elevationScale": 20,
+                                "enableElevationZoomFactor": True,
+                                "enable3d": True,
                             },
-                            "colorField": {
-                                "name": "categoria",
-                                "type": "string",
-                            },
-                            "colorScale": "ordinal",
                         },
                         "visualChannels": {
-                            "colorField": {
-                                "name": "categoria",
-                                "type": "string",
-                            },
-                            "colorScale": "ordinal",
+                            "colorField": None,
+                            "colorScale": "quantile",
                             "sizeField": None,
                             "sizeScale": "linear",
                         },
@@ -130,9 +125,9 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "latitude": centro["lat"],
                 "longitude": centro["lon"],
                 "zoom": centro["zoom"],
-                "bearing": 0,
-                "pitch": 0,
-                "dragRotate": False,
+                "bearing": 24,
+                "pitch": 45,
+                "dragRotate": True,
             },
             "mapStyle": {
                 "styleType": "voyager",
