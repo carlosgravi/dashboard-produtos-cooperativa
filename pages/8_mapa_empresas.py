@@ -1,10 +1,10 @@
 """Pagina 8 - Mapa de Empresas de Transporte, Logistica e Correios.
 
-Mapa Plotly Mapbox (WebGL) com empresas individuais filtradas por UF.
+Mapa PyDeck (deck.gl/WebGL) com empresas individuais filtradas por UF.
 """
 
 import pandas as pd
-import plotly.express as px
+import pydeck as pdk
 import streamlit as st
 
 from src.api.empresas import (
@@ -15,6 +15,24 @@ from src.api.empresas import (
 from src.utils.constants import CATEGORIAS_EMPRESAS
 from src.utils.formatting import formatar_numero
 from src.components.kpi_card import kpi_row
+
+# Cores por categoria (RGB)
+CORES_CATEGORIA = {
+    "Transporte de Cargas": [46, 134, 193],
+    "Transporte de Passageiros": [231, 76, 60],
+    "Logistica e Armazenagem": [39, 174, 96],
+    "Correios e Encomendas": [243, 156, 18],
+    "Outros": [149, 165, 166],
+}
+
+# Centros aproximados das UFs para zoom inicial
+CENTROS_UF = {
+    "SC": {"lat": -27.6, "lon": -50.3, "zoom": 6.5},
+    "PR": {"lat": -24.9, "lon": -51.4, "zoom": 6.2},
+    "RS": {"lat": -29.7, "lon": -53.5, "zoom": 5.8},
+    "SP": {"lat": -22.5, "lon": -48.5, "zoom": 5.8},
+}
+DEFAULT_CENTER = {"lat": -27.6, "lon": -50.3, "zoom": 6}
 
 st.header("Mapa de Empresas de Transporte, Logistica e Correios")
 st.markdown("Geolocalizacao de empresas do setor por CNAE (Receita Federal).")
@@ -99,7 +117,7 @@ st.markdown("---")
 
 st.markdown(f"**{formatar_numero(total)} empresas** encontradas em {uf_sel}")
 
-# === Mapa Plotly Mapbox ===
+# === Mapa PyDeck ===
 df_mapa = df_detail.copy()
 if "lat" in df_mapa.columns and "lon" in df_mapa.columns:
     df_mapa["lat"] = pd.to_numeric(df_mapa["lat"], errors="coerce")
@@ -107,38 +125,78 @@ if "lat" in df_mapa.columns and "lon" in df_mapa.columns:
     df_mapa = df_mapa.dropna(subset=["lat", "lon"])
 
 if not df_mapa.empty:
-    # Preparar hover text
-    df_mapa["hover"] = (
-        df_mapa["nome"].fillna("") + "<br>"
-        + "CNPJ: " + df_mapa["cnpj"].fillna("") + "<br>"
-        + "Categoria: " + df_mapa["categoria"].fillna("") + "<br>"
-        + "Porte: " + df_mapa.get("porte_desc", pd.Series("", index=df_mapa.index)).fillna("") + "<br>"
-        + "Municipio: " + df_mapa["municipio"].fillna("")
+    # Atribuir cor RGB por categoria
+    df_mapa["cor"] = df_mapa["categoria"].map(CORES_CATEGORIA).apply(lambda x: x if isinstance(x, list) else [149, 165, 166])
+
+    # Tooltip
+    df_mapa["tooltip_nome"] = df_mapa["nome"].fillna("")
+    df_mapa["tooltip_cnpj"] = df_mapa["cnpj"].fillna("")
+    df_mapa["tooltip_cat"] = df_mapa["categoria"].fillna("")
+    df_mapa["tooltip_porte"] = df_mapa.get("porte_desc", pd.Series("", index=df_mapa.index)).fillna("")
+    df_mapa["tooltip_mun"] = df_mapa["municipio"].fillna("")
+    df_mapa["tooltip_tel"] = df_mapa.get("telefone", pd.Series("", index=df_mapa.index)).fillna("")
+    df_mapa["tooltip_email"] = df_mapa.get("email", pd.Series("", index=df_mapa.index)).fillna("")
+
+    # Centro e zoom
+    centro = CENTROS_UF.get(uf_sel, DEFAULT_CENTER)
+
+    layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=df_mapa,
+        get_position=["lon", "lat"],
+        get_color="cor",
+        get_radius=600,
+        radius_min_pixels=3,
+        radius_max_pixels=15,
+        pickable=True,
+        auto_highlight=True,
+        highlight_color=[255, 200, 0, 200],
     )
 
-    fig = px.scatter_mapbox(
-        df_mapa,
-        lat="lat",
-        lon="lon",
-        color="categoria",
-        hover_name="nome",
-        hover_data={"lat": False, "lon": False, "categoria": True, "municipio": True, "porte_desc": True},
-        zoom=6,
-        height=600,
-        opacity=0.6,
-        size_max=8,
+    view_state = pdk.ViewState(
+        latitude=centro["lat"],
+        longitude=centro["lon"],
+        zoom=centro["zoom"],
+        pitch=0,
     )
-    fig.update_layout(
-        mapbox_style="carto-positron",
-        margin=dict(l=0, r=0, t=0, b=0),
-        legend=dict(orientation="h", yanchor="top", y=0.99, xanchor="left", x=0.01),
-    )
-    fig.update_traces(marker=dict(size=5))
 
-    st.plotly_chart(fig, use_container_width=True)
+    tooltip = {
+        "html": (
+            "<b>{tooltip_nome}</b><br/>"
+            "CNPJ: {tooltip_cnpj}<br/>"
+            "Categoria: {tooltip_cat}<br/>"
+            "Porte: {tooltip_porte}<br/>"
+            "Municipio: {tooltip_mun}<br/>"
+            "Tel: {tooltip_tel}<br/>"
+            "Email: {tooltip_email}"
+        ),
+        "style": {
+            "backgroundColor": "rgba(0,0,0,0.8)",
+            "color": "white",
+            "fontSize": "12px",
+            "padding": "8px",
+        },
+    }
+
+    deck = pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        tooltip=tooltip,
+        map_style="mapbox://styles/mapbox/light-v11",
+    )
+
+    st.pydeck_chart(deck, use_container_width=True, height=650)
 
     if len(df_mapa) < total:
         st.caption(f"Exibindo {formatar_numero(len(df_mapa))} de {formatar_numero(total)} empresas (apenas com coordenadas).")
+
+    # Legenda
+    st.markdown("**Legenda:**  " + "  |  ".join(
+        f'<span style="color:rgb({c[0]},{c[1]},{c[2]})">&#11044;</span> {cat}'
+        for cat, c in CORES_CATEGORIA.items()
+        if cat in df_mapa["categoria"].values
+    ), unsafe_allow_html=True)
+
 else:
     st.info(f"Nenhuma empresa com coordenadas em {uf_sel}.")
 
