@@ -20,7 +20,7 @@ from src.api.empresas import (
     filtrar_municipios,
     listar_ufs_com_dados_individuais,
     carregar_empresas_uf,
-    filtrar_empresas_individuais,
+    filtrar_empresas_avancado,
 )
 from src.utils.constants import CORES, CATEGORIAS_EMPRESAS, CORES_CATEGORIAS_MAPA
 from src.utils.formatting import formatar_numero
@@ -114,23 +114,38 @@ if modo_detail:
         st.stop()
 
     # Filtros adicionais para modo detail
-    col_filtros = st.columns([1, 1, 2])
+    col_f1, col_f2, col_f3 = st.columns(3)
 
-    with col_filtros[0]:
+    with col_f1:
         municipios_disponiveis = ["Todos"] + sorted(df_empresas["municipio"].dropna().unique().tolist())
         municipio_sel = st.selectbox("Município", municipios_disponiveis)
 
-    with col_filtros[1]:
-        max_marcadores = st.slider("Máx. marcadores no mapa", 1000, 50000, 10000, step=1000)
+    with col_f2:
+        portes_disponiveis = sorted(df_empresas["porte_desc"].dropna().unique().tolist()) if "porte_desc" in df_empresas.columns else []
+        porte_sel = st.multiselect("Porte", portes_disponiveis) if portes_disponiveis else []
 
-    with col_filtros[2]:
+    with col_f3:
         busca_texto = st.text_input("Buscar (nome, CNPJ ou endereço)", "")
 
+    col_c1, col_c2, col_c3 = st.columns(3)
+
+    with col_c1:
+        capital_min = st.number_input("Capital Social mín (R$)", min_value=0, value=0, step=10000)
+
+    with col_c2:
+        capital_max = st.number_input("Capital Social máx (R$)", min_value=0, value=0, step=10000, help="0 = sem limite")
+
+    with col_c3:
+        max_marcadores = st.slider("Máx. marcadores no mapa", 1000, 50000, 10000, step=1000)
+
     # Aplicar filtros
-    df_detail = filtrar_empresas_individuais(
+    df_detail = filtrar_empresas_avancado(
         df_empresas,
         categoria=categoria_sel,
         municipio=municipio_sel,
+        porte=porte_sel if porte_sel else None,
+        capital_min=capital_min if capital_min > 0 else None,
+        capital_max=capital_max if capital_max > 0 else None,
         busca=busca_texto,
     )
 
@@ -227,7 +242,7 @@ if modo_detail:
     st.subheader(f"Empresas em {uf_sel}")
 
     colunas_exibir = ["nome", "cnpj", "categoria", "porte_desc", "nat_juridica_desc",
-                       "capital_social", "endereco", "cep", "municipio"]
+                       "capital_social", "telefone", "email", "endereco", "cep", "municipio"]
     colunas_exibir = [c for c in colunas_exibir if c in df_detail.columns]
     df_exibir = df_detail[colunas_exibir].copy()
 
@@ -238,6 +253,8 @@ if modo_detail:
         "porte_desc": "Porte",
         "nat_juridica_desc": "Nat. Jurídica",
         "capital_social": "Capital Social",
+        "telefone": "Telefone",
+        "email": "Email",
         "endereco": "Endereço",
         "cep": "CEP",
         "municipio": "Município",
