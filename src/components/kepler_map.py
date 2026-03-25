@@ -68,20 +68,15 @@ def kepler_static(
         "options": {"readOnly": read_only, "centerMap": center_map},
     })
 
+    resize_js = "try{window.frameElement.style.setProperty('width','100%','important')}catch(e){}"
+
     injected = (
         template[:k]
-        + '<body><script>window.__keplerglDataConfig = '
+        + "<body><script>window.__keplerglDataConfig = "
         + kepler_data
+        + ";" + resize_js
         + ";</script>"
         + template[k + 6:]
     )
 
-    # Script to resize the iframe from inside (only the iframe, no parent changes)
-    resize_script = """<script>
-(function(){
-    var f = window.frameElement;
-    if(f) f.style.setProperty('width','100%','important');
-})();
-</script>"""
-    injected = injected.replace("</body>", resize_script + "</body>")
     components.html(injected, height=height + 10, scrolling=False)
