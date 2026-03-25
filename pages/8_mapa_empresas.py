@@ -249,7 +249,7 @@ if not df_mapa.empty:
 
     # Construir mapa Kepler.gl
     config = _build_kepler_config(uf_sel, categorias_presentes)
-    kepler_static(data={"empresas": df_kepler}, config=config, height=650)
+    kepler_static(data={"empresas": df_kepler}, config=config, height=650, full_width=True)
 
     if len(df_mapa) < total:
         st.caption(f"Exibindo {formatar_numero(len(df_mapa))} de {formatar_numero(total)} empresas (apenas com coordenadas).")
