@@ -12,8 +12,7 @@ __pycache__/
 Thumbs.db
 nul
 
-# Dados grandes gerados (empresas individuais)
-data/empresas/uf/
+# Dados grandes gerados
 data/empresas/geocode_cache.json
 data/empresas/empresas_transporte.json
 
