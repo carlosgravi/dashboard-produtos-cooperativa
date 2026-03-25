@@ -4,6 +4,7 @@ import gzip
 import json
 import os
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -159,6 +160,14 @@ def carregar_empresas_uf(uf):
                 chaves = df.loc[sem_coord, "municipio"].astype(str) + "|" + df.loc[sem_coord, "uf"].astype(str)
                 df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
                 df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
+
+        # Jitter: espalhar empresas no mesmo municipio (~3km de raio)
+        tem_coord = df["lat"].notna() & df["lon"].notna()
+        n = tem_coord.sum()
+        if n > 0:
+            rng = np.random.default_rng(42)
+            df.loc[tem_coord, "lat"] = df.loc[tem_coord, "lat"].astype(float) + rng.uniform(-0.03, 0.03, size=n)
+            df.loc[tem_coord, "lon"] = df.loc[tem_coord, "lon"].astype(float) + rng.uniform(-0.03, 0.03, size=n)
 
     return df
 
