@@ -150,18 +150,15 @@ def carregar_empresas_uf(uf):
     if df.empty:
         return df
 
-    # Preencher coordenadas faltantes com centroide do municipio
+    # Preencher coordenadas faltantes com centroide do municipio (vetorizado)
     if "lat" in df.columns and "lon" in df.columns and "municipio" in df.columns:
         sem_coord = df["lat"].isna() | df["lon"].isna()
         if sem_coord.any():
             centroides = _carregar_centroides()
             if centroides:
-                for idx in df.index[sem_coord]:
-                    chave = f"{df.at[idx, 'municipio']}|{df.at[idx, 'uf']}"
-                    coord = centroides.get(chave)
-                    if coord:
-                        df.at[idx, "lat"] = coord[0]
-                        df.at[idx, "lon"] = coord[1]
+                chaves = df.loc[sem_coord, "municipio"].astype(str) + "|" + df.loc[sem_coord, "uf"].astype(str)
+                df.loc[sem_coord, "lat"] = chaves.map(lambda k: centroides.get(k, [None, None])[0])
+                df.loc[sem_coord, "lon"] = chaves.map(lambda k: centroides.get(k, [None, None])[1])
 
     return df
 

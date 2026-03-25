@@ -72,7 +72,7 @@ with col_c2:
     capital_max = st.number_input("Capital Social max (R$)", min_value=0, value=0, step=10000, help="0 = sem limite")
 
 with col_c3:
-    max_marcadores = st.slider("Max. marcadores no mapa", 1000, 50000, 10000, step=1000)
+    max_marcadores = st.slider("Max. marcadores no mapa", 500, 50000, 3000, step=500)
 
 # === Aplicar filtros ===
 df_detail = filtrar_empresas_avancado(
