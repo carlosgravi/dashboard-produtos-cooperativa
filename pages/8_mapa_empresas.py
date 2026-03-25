@@ -59,22 +59,26 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                 "filters": [],
                 "layers": [
                     {
-                        "id": "empresas_icon",
-                        "type": "icon",
+                        "id": "empresas_point",
+                        "type": "point",
                         "config": {
                             "dataId": "empresas",
                             "label": "Empresas",
-                            "color": [46, 134, 193],
+                            "color": [0, 120, 255],
                             "columns": {
                                 "lat": "lat",
                                 "lng": "lon",
-                                "icon": "icon",
+                                "altitude": None,
                             },
                             "isVisible": True,
                             "visConfig": {
-                                "radius": 20,
+                                "radius": 12,
                                 "fixedRadius": False,
-                                "opacity": 0.9,
+                                "opacity": 0.85,
+                                "outline": True,
+                                "thickness": 1.5,
+                                "filled": True,
+                                "radiusRange": [4, 25],
                                 "colorRange": {
                                     "name": "Categorias",
                                     "type": "custom",
@@ -83,13 +87,7 @@ def _build_kepler_config(uf_sel, categorias_presentes):
                                         "#{:02x}{:02x}{:02x}".format(*c) for c in color_range
                                     ],
                                 },
-                                "radiusRange": [5, 30],
                             },
-                            "colorField": {
-                                "name": "categoria",
-                                "type": "string",
-                            },
-                            "colorScale": "ordinal",
                         },
                         "visualChannels": {
                             "colorField": {
@@ -235,9 +233,6 @@ if not df_mapa.empty:
                       "porte_desc", "telefone", "email", "capital_social"]
     colunas_kepler = [c for c in colunas_kepler if c in df_mapa.columns]
     df_kepler = df_mapa[colunas_kepler].copy()
-
-    # Coluna icon para o layer icon do Kepler.gl
-    df_kepler["icon"] = "default"
 
     # Preencher NaN com string vazia para tooltips limpos
     for col in df_kepler.columns:
