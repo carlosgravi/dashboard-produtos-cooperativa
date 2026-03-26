@@ -82,10 +82,13 @@ paginas = {
 
 nav = st.navigation(paginas)
 
+# === Logo Transpocred no topo do sidebar (acima da navegação) ===
+st.logo("assets/logo_transpocred.svg")
+
 # === Sidebar ===
 with st.sidebar:
-    st.image("assets/logo_transpocred.svg")
     st.markdown("---")
+    st.image("assets/logo_ailos_white.svg", width=120)
     st.caption("Dados públicos | BCB, ANTT, ANP, RFB, CGU, PNCP")
 
 nav.run()
