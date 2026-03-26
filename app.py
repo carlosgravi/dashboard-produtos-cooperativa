@@ -9,6 +9,53 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# === Sidebar escuro com identidade Transpocred ===
+st.markdown("""
+<style>
+/* Fundo escuro no sidebar */
+[data-testid="stSidebar"] {
+    background-color: #165C7D;
+}
+
+/* Texto geral do sidebar em branco */
+[data-testid="stSidebar"] * {
+    color: #FFFFFF !important;
+}
+
+/* Títulos de grupo do menu (Transpocred, Mercado, Setor, Sobre) */
+[data-testid="stSidebar"] [data-testid="stSidebarNavSeparator"] span,
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] h4 {
+    color: #FFA300 !important;
+    font-weight: 700;
+}
+
+/* Links do menu */
+[data-testid="stSidebar"] a {
+    color: #FFFFFF !important;
+}
+[data-testid="stSidebar"] a:hover {
+    color: #FFA300 !important;
+}
+
+/* Item de menu ativo: fundo teal com texto branco */
+[data-testid="stSidebar"] [data-testid="stSidebarNavLink"][aria-current="page"],
+[data-testid="stSidebar"] .stNavLink[aria-selected="true"] {
+    background-color: #007D89 !important;
+}
+
+/* Linha divisória no sidebar */
+[data-testid="stSidebar"] hr {
+    border-color: rgba(255,255,255,0.2) !important;
+}
+
+/* Caption no sidebar */
+[data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small {
+    color: rgba(255,255,255,0.7) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # === Navegação ===
 paginas = {
     "Transpocred": [
