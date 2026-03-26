@@ -271,6 +271,22 @@ def _buscar_cadastro_cooperativas(data_base):
     return mapa
 
 
+def _carregar_cadastro_cooperativas_fallback():
+    """Fallback: monta mapa CNPJ8 -> Nome a partir do cache BcBase (sedes_cooperativas.json)."""
+    caminho = os.path.join(DATA_DIR, "bcb", "sedes_cooperativas.json")
+    if not os.path.exists(caminho):
+        return {}
+    with open(caminho, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+    mapa = {}
+    for r in dados:
+        cnpj8 = r.get("codigoCNPJ8", "")
+        nome = r.get("nomeEntidadeInteresse", r.get("nomeReduzido", ""))
+        if cnpj8 and nome:
+            mapa[cnpj8] = nome
+    return mapa
+
+
 def buscar_e_salvar_ifdata_ranking():
     """Busca relatório 1 de TODAS as cooperativas (para ranking)."""
     print("\n=== IF.data Ranking (todas as cooperativas) ===")
@@ -280,8 +296,22 @@ def buscar_e_salvar_ifdata_ranking():
 
     try:
         # 1. Buscar cadastro para obter nomes e filtrar cooperativas
-        print("  Buscando cadastro de instituições...")
-        mapa_nomes = _buscar_cadastro_cooperativas(data_base)
+        mapa_nomes = {}
+        datas_tentativa = _get_ifdata_datas_base()[:6]
+        for dt_cad in datas_tentativa:
+            try:
+                print(f"  Buscando cadastro IF.data (data-base: {dt_cad})...")
+                mapa_nomes = _buscar_cadastro_cooperativas(dt_cad)
+                if mapa_nomes:
+                    break
+            except Exception as e:
+                print(f"  [RETRY] Cadastro {dt_cad} falhou: {e}")
+        if not mapa_nomes:
+            print("  IF.data Cadastro indisponível, usando fallback BcBase (sedes)...")
+            mapa_nomes = _carregar_cadastro_cooperativas_fallback()
+        if not mapa_nomes:
+            print("  [ERRO] Não foi possível obter cadastro de cooperativas")
+            return
         print(f"  Cooperativas no cadastro: {len(mapa_nomes)}")
 
         # 2. Buscar valores (instituições individuais = tipo 3)
@@ -540,12 +570,28 @@ def buscar_e_salvar_ifdata_ranking_historico():
     datas = _get_ifdata_datas_base()[:8]
     print(f"  Trimestres: {', '.join(datas)}")
 
-    # Buscar cadastro de cooperativas (usar o trimestre mais recente)
-    data_base_cadastro = _encontrar_data_base_disponivel(cnpj_8=TRANSPOCRED_CNPJ_8)
-    print(f"  Buscando cadastro (data-base: {data_base_cadastro})...")
-    mapa_nomes = _buscar_cadastro_cooperativas(data_base_cadastro)
+    # Buscar cadastro de cooperativas (tentar IF.data, fallback BcBase)
+    mapa_nomes = {}
+    for dt_cad in datas:
+        try:
+            print(f"  Buscando cadastro IF.data (data-base: {dt_cad})...")
+            mapa_nomes = _buscar_cadastro_cooperativas(dt_cad)
+            if mapa_nomes:
+                print(f"  Cooperativas no cadastro: {len(mapa_nomes)}")
+                break
+        except Exception as e:
+            print(f"  [RETRY] Cadastro {dt_cad} falhou: {e}")
+
+    if not mapa_nomes:
+        print("  IF.data Cadastro indisponível, usando fallback BcBase (sedes)...")
+        mapa_nomes = _carregar_cadastro_cooperativas_fallback()
+
+    if not mapa_nomes:
+        print("  [ERRO] Não foi possível obter cadastro de cooperativas")
+        return
+
+    print(f"  Cooperativas no cadastro: {len(mapa_nomes)}")
     coop_codigos = set(mapa_nomes.keys())
-    print(f"  Cooperativas no cadastro: {len(coop_codigos)}")
 
     frames = []
     for i, dt in enumerate(datas, 1):
