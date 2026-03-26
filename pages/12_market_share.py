@@ -295,6 +295,10 @@ with tab2:
                     df_trend = pd.merge(df_trend, df_m, on="DataBase", how="outer")
 
             df_trend = df_trend.sort_values("DataBase").reset_index(drop=True)
+            # Formatar período: "202509" -> "09/2025"
+            df_trend["Periodo"] = df_trend["DataBase"].apply(
+                lambda d: f"{d[4:6]}/{d[:4]}" if len(str(d)) == 6 else d
+            )
             n_trimestres = len(df_trend)
 
             # === KPIs: CAGR anualizado ===
@@ -328,7 +332,7 @@ with tab2:
             for i, metrica in enumerate(metricas_disponiveis):
                 valores_fmt = [formatar_bilhoes(v * 1000) for v in df_trend[metrica]]
                 fig_evo.add_trace(go.Scatter(
-                    x=df_trend["DataBase"],
+                    x=df_trend["Periodo"],
                     y=df_trend[metrica],
                     mode="lines+markers",
                     name=metrica,
@@ -344,7 +348,7 @@ with tab2:
             layout_evo["xaxis"] = dict(
                 type="category",
                 categoryorder="array",
-                categoryarray=list(df_trend["DataBase"]),
+                categoryarray=list(df_trend["Periodo"]),
             )
             fig_evo.update_layout(**layout_evo)
             st.plotly_chart(fig_evo, use_container_width=True)
@@ -359,7 +363,7 @@ with tab2:
             )
 
             if metrica_sel and metrica_sel in df_trend.columns:
-                df_cresc = df_trend[["DataBase", metrica_sel]].dropna().copy()
+                df_cresc = df_trend[["Periodo", metrica_sel]].dropna().copy()
                 df_cresc["Crescimento (%)"] = df_cresc[metrica_sel].pct_change() * 100
 
                 df_cresc_plot = df_cresc.dropna(subset=["Crescimento (%)"])
@@ -371,7 +375,7 @@ with tab2:
                     valores_cresc_fmt = [formatar_bilhoes(v * 1000) for v in df_cresc_plot[metrica_sel]]
                     fig_cresc = go.Figure()
                     fig_cresc.add_trace(go.Bar(
-                        x=df_cresc_plot["DataBase"],
+                        x=df_cresc_plot["Periodo"],
                         y=df_cresc_plot["Crescimento (%)"],
                         marker_color=cores_cresc,
                         text=[f"{v:+.1f}%" for v in df_cresc_plot["Crescimento (%)"]],
@@ -409,7 +413,7 @@ with tab2:
                     else:
                         hover_fmt = "<b>%{x}</b><br>Eficiência: %{y:.1%}<extra></extra>"
                     fig_ind.add_trace(go.Scatter(
-                        x=df_trend["DataBase"],
+                        x=df_trend["Periodo"],
                         y=df_trend[ind],
                         mode="lines+markers",
                         name=ind,
@@ -498,7 +502,7 @@ with tab3:
                     valor_t = df_dt.loc[idx, "Valor"]
                     share = (valor_t / total * 100) if total > 0 else 0
                     evolucao_share.append({
-                        "Trimestre": dt,
+                        "Trimestre": f"{dt[4:6]}/{dt[:4]}" if len(str(dt)) == 6 else dt,
                         "Share (%)": share,
                         "Posição": df_dt.loc[idx, "Posição"],
                         "Valor Transpocred": valor_t,
