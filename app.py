@@ -27,6 +27,9 @@ paginas = {
         st.Page("pages/9_compliance.py", title="Compliance", icon="🔍"),
         st.Page("pages/10_diretorio_empresas.py", title="Diretório de Empresas", icon="📋"),
     ],
+    "Sobre": [
+        st.Page("pages/11_documentacao.py", title="Documentação Técnica", icon="📄"),
+    ],
 }
 
 nav = st.navigation(paginas)
