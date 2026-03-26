@@ -176,10 +176,18 @@ with tab1:
                 color_discrete_sequence=PALETA_SEQUENCIAL,
                 hole=0.4,
             )
-            fig_pizza.update_traces(textposition="outside", textinfo="percent+label")
+            fig_pizza.update_traces(textposition="inside", textinfo="percent")
             layout_pizza = dict(LAYOUT_PADRAO)
-            layout_pizza["height"] = 500
+            layout_pizza["height"] = 450
             layout_pizza["title"] = dict(text="Top 10 Cooperativas + Outras — Ativo Total", x=0.5)
+            layout_pizza["legend"] = dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.05,
+                xanchor="center",
+                x=0.5,
+            )
+            layout_pizza["margin"] = dict(l=20, r=20, t=50, b=10)
             fig_pizza.update_layout(**layout_pizza)
             st.plotly_chart(fig_pizza, use_container_width=True)
 
