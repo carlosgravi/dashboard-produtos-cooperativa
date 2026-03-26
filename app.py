@@ -37,16 +37,7 @@ nav = st.navigation(paginas)
 
 # === Sidebar ===
 with st.sidebar:
-    st.markdown("---")
-    st.markdown(
-        """
-        **Transpocred**
-        Cooperativa de Crédito dos Trabalhadores
-        em Transportes, Correios e Logística
-
-        *Sistema Ailos*
-        """
-    )
+    st.image("assets/logo_transpocred.svg")
     st.markdown("---")
     st.caption("Dados públicos | BCB, ANTT, ANP, RFB, CGU, PNCP")
 

@@ -141,7 +141,7 @@ for _, row in df_top20.iterrows():
         is_transp = str(row.get(col_cod, "")).replace(".", "").replace("/", "").replace("-", "") == TRANSPOCRED_CNPJ_8
     elif col_nome:
         is_transp = "TRANSPOCRED" in str(row.get(col_nome, "")).upper()
-    cores_barras.append(CORES["verde_ailos"] if is_transp else CORES["cinza_claro"])
+    cores_barras.append(CORES["teal"] if is_transp else CORES["cinza_claro"])
 
 import plotly.graph_objects as go
 from src.utils.constants import LAYOUT_PADRAO
@@ -175,7 +175,7 @@ if valor_transp is not None:
         df_comp, x="Indicador", y="Valor",
         color="Indicador",
         color_discrete_map={
-            TRANSPOCRED_NOME: CORES["verde_ailos"],
+            TRANSPOCRED_NOME: CORES["teal"],
             "Média do Setor": CORES["azul"],
             "Mediana do Setor": CORES["laranja"],
         },

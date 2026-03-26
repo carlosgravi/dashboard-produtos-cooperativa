@@ -113,7 +113,7 @@ with tab4:
         fig_dolar = grafico_linha(
             df_dolar, x="data", y="valor",
             titulo="Dólar PTAX (R$)",
-            cor=CORES["azul_escuro"],
+            cor=CORES["teal_escuro"],
         )
         st.plotly_chart(fig_dolar, use_container_width=True)
     else:

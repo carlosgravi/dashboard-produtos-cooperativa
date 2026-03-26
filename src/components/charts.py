@@ -22,7 +22,7 @@ def grafico_linha(df, x, y, titulo=None, cor=None, altura=400, formato_y=None):
     """Grafico de linha simples."""
     fig = px.line(
         df, x=x, y=y,
-        color_discrete_sequence=[cor or CORES["verde_ailos"]],
+        color_discrete_sequence=[cor or CORES["teal"]],
     )
     fig.update_traces(line=dict(width=2.5))
     if formato_y:
@@ -56,13 +56,13 @@ def grafico_barras(df, x, y, titulo=None, cor=None, horizontal=False, altura=400
     if horizontal:
         fig = px.bar(
             df, x=y, y=x, orientation="h",
-            color_discrete_sequence=[cor or CORES["verde_ailos"]],
+            color_discrete_sequence=[cor or CORES["teal"]],
             text=texto,
         )
     else:
         fig = px.bar(
             df, x=x, y=y,
-            color_discrete_sequence=[cor or CORES["verde_ailos"]],
+            color_discrete_sequence=[cor or CORES["teal"]],
             text=texto,
         )
     if texto:
@@ -115,7 +115,7 @@ def grafico_mapa_brasil(df, coluna_uf, coluna_valor, titulo=None, altura=500, co
         coluna_valor: Nome da coluna com valores
         titulo: Titulo do grafico
         altura: Altura em pixels
-        color_scale: Escala de cores (padrao: Greens)
+        color_scale: Escala de cores (padrao: Teal)
     """
     geojson = _carregar_geojson_brasil()
     if geojson is None:
@@ -128,7 +128,7 @@ def grafico_mapa_brasil(df, coluna_uf, coluna_valor, titulo=None, altura=500, co
         locations=coluna_uf,
         featureidkey="properties.sigla",
         color=coluna_valor,
-        color_continuous_scale=color_scale or "Greens",
+        color_continuous_scale=color_scale or "Teal",
         scope="south america",
         hover_name=coluna_uf,
         hover_data={coluna_valor: ":,.0f"},
@@ -173,7 +173,7 @@ def grafico_scatter_mapa_brasil(df, coluna_lat, coluna_lon, coluna_tamanho,
         kwargs["color"] = coluna_cor
         kwargs["color_discrete_sequence"] = PALETA_SEQUENCIAL
     else:
-        kwargs["color_discrete_sequence"] = [CORES["verde_ailos"]]
+        kwargs["color_discrete_sequence"] = [CORES["teal"]]
     if coluna_hover:
         kwargs["hover_name"] = coluna_hover
 

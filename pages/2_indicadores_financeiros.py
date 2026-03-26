@@ -69,7 +69,7 @@ with tab_credito:
                     df_mod_pf.sort_values("Valor", ascending=False),
                     x="NomeConta", y="Valor",
                     titulo="Crédito PF por Modalidade (R$)",
-                    cor=CORES["verde_ailos"],
+                    cor=CORES["teal"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
@@ -250,7 +250,7 @@ with tab_inadimplencia:
             fig = grafico_barras(
                 df_pf_view, x="NomeConta", y="Valor",
                 titulo="Carteira de Crédito PF por Prazo (R$)",
-                cor=CORES["verde_ailos"],
+                cor=CORES["teal"],
             )
             st.plotly_chart(fig, use_container_width=True)
 

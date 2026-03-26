@@ -119,7 +119,7 @@ if not df_sedes.empty:
             df_por_uf.sort_values("Quantidade", ascending=False).head(15),
             x=col_uf, y="Quantidade",
             titulo="Top 15 UFs por Quantidade de Cooperativas",
-            cor=CORES["verde_ailos"],
+            cor=CORES["teal"],
         )
         st.plotly_chart(fig_barras, use_container_width=True)
     else:

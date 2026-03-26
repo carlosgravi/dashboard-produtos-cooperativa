@@ -52,7 +52,7 @@ with tab_veiculos:
                 fig = grafico_barras(
                     df_uf.head(10), x=col_uf, y="Total_Veiculos",
                     titulo="Top 10 UFs por Quantidade de Veículos",
-                    cor=CORES["verde_ailos"],
+                    cor=CORES["teal"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 

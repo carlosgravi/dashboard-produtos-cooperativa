@@ -369,7 +369,7 @@ with tab2:
                 df_cresc_plot = df_cresc.dropna(subset=["Crescimento (%)"])
                 if not df_cresc_plot.empty:
                     cores_cresc = [
-                        CORES["verde_ailos"] if v >= 0 else CORES["vermelho"]
+                        CORES["teal"] if v >= 0 else CORES["vermelho"]
                         for v in df_cresc_plot["Crescimento (%)"]
                     ]
                     valores_cresc_fmt = [formatar_bilhoes(v) for v in df_cresc_plot[metrica_sel]]
@@ -528,7 +528,7 @@ with tab3:
                     y=df_evo_share["Share (%)"],
                     mode="lines+markers+text",
                     name="Market Share (%)",
-                    line=dict(color=CORES["verde_ailos"], width=3),
+                    line=dict(color=CORES["teal"], width=3),
                     marker=dict(size=8),
                     text=[f"{v:.2f}%" for v in df_evo_share["Share (%)"]],
                     textposition="top center",
@@ -623,7 +623,7 @@ with tab3:
                         df_comp, x="", y="Crescimento (%)",
                         color="",
                         color_discrete_map={
-                            TRANSPOCRED_NOME: CORES["verde_ailos"],
+                            TRANSPOCRED_NOME: CORES["teal"],
                             "Mercado Total": CORES["azul"],
                         },
                         text=[f"{v:+.1f}%" for v in df_comp["Crescimento (%)"]],

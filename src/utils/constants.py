@@ -63,22 +63,21 @@ GEOJSON_BRASIL_URL = "https://raw.githubusercontent.com/codeforamerica/click_tha
 
 # === Paleta de cores ===
 CORES = {
-    "verde_ailos": "#00A651",
-    "verde_escuro": "#007A3D",
-    "verde_claro": "#66CC99",
-    "azul": "#1F77B4",
-    "azul_escuro": "#0D4F8B",
-    "laranja": "#FF7F0E",
+    "teal": "#007D89",
+    "teal_escuro": "#165C7D",
+    "teal_claro": "#4DA8B3",
+    "verde": "#09AF41",
+    "laranja": "#FFA300",
     "vermelho": "#D62728",
-    "cinza": "#7F7F7F",
+    "cinza": "#575757",
     "cinza_claro": "#D3D3D3",
+    "azul": "#1F77B4",
     "amarelo": "#FFD700",
 }
 
 PALETA_SEQUENCIAL = [
-    "#00A651", "#007A3D", "#66CC99", "#1F77B4",
-    "#FF7F0E", "#D62728", "#9467BD", "#8C564B",
-    "#E377C2", "#7F7F7F",
+    "#007D89", "#165C7D", "#FFA300", "#09AF41", "#4DA8B3",
+    "#D62728", "#9467BD", "#8C564B", "#E377C2", "#575757",
 ]
 
 # === Layout padrão Plotly ===

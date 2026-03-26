@@ -61,7 +61,7 @@ with col1:
         fig = grafico_linha(
             df_qtd, x="data", y="valor",
             titulo="Evolução da Quantidade de Cooperativas",
-            cor=CORES["verde_ailos"],
+            cor=CORES["teal"],
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -109,7 +109,7 @@ if not df_dep_pf.empty:
     fig = grafico_linha(
         df_dep_pf, x="data", y="valor",
         titulo="Depósitos à Vista PF (R$ milhões)",
-        cor=CORES["verde_escuro"],
+        cor=CORES["teal_escuro"],
     )
     st.plotly_chart(fig, use_container_width=True)
 
