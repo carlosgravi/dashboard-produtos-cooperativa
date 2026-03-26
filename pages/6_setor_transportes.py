@@ -157,4 +157,22 @@ else:
     )
 
 st.markdown("---")
-st.caption("Fontes: ANTT - RNTRC | ANP - Sistema de Levantamento de Preços")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fontes dos dados:**
+- ANTT — Registro Nacional de Transportadores Rodoviários de Cargas (RNTRC)
+- ANP — Sistema de Levantamento de Preços (SLP)
+
+**APIs utilizadas:**
+- ANTT dados abertos: CSV direto (veículos) + CKAN API (transportadores)
+- ANP dados abertos: CSV de preços de combustíveis
+
+**Principais métricas:**
+- Frota de veículos: total, por tipo, por UF e idade da frota
+- Transportadores por categoria: TAC (Autônomo), ETC (Empresa), CTC (Cooperativa)
+- Preço médio do Diesel por UF e nacional
+
+**Periodicidade:** ANTT: mensal | ANP: semanal (últimas 4 semanas)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

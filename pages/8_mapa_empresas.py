@@ -299,4 +299,20 @@ df_exibir = df_exibir.rename(columns=renames)
 st.dataframe(df_exibir, use_container_width=True, hide_index=True, height=400)
 
 st.markdown("---")
-st.caption("Fontes: Receita Federal / CNPJ (Base dos Dados / BigQuery)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Receita Federal do Brasil — Cadastro CNPJ, via Base dos Dados (BigQuery)
+
+**APIs utilizadas:**
+- Google BigQuery (Base dos Dados): dados cadastrais de empresas filtrados por CNAEs do setor
+- Nominatim / AwesomeAPI CEP / IBGE: geocodificação de endereços (3 níveis de fallback)
+
+**Principais métricas:**
+- Empresas por categoria CNAE (Transporte de Cargas, Passageiros, Logística, Armazéns, Correios)
+- Distribuição por porte e capital social
+- Geolocalização individual no mapa
+
+**Periodicidade:** Dados da RFB atualizados mensalmente na Base dos Dados. Geocodificação sob demanda.
+
+**Atualização do dashboard:** Manual via `scripts/buscar_empresas_transporte.py`.
+""")

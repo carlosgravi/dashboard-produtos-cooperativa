@@ -163,3 +163,18 @@ else:
         file_name=f"diretorio_empresas_{uf_selecionada}.csv",
         mime="text/csv",
     )
+
+st.markdown("---")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Receita Federal do Brasil — Cadastro CNPJ, via Base dos Dados (BigQuery)
+
+**Principais métricas:**
+- Diretório completo com razão social, nome fantasia, CNPJ e informações de contato
+- Filtros por categoria CNAE, porte, capital social, município e busca textual
+- Download em CSV para análise externa
+
+**Periodicidade:** Dados da RFB atualizados mensalmente na Base dos Dados.
+
+**Atualização do dashboard:** Manual via `scripts/buscar_empresas_transporte.py`.
+""")

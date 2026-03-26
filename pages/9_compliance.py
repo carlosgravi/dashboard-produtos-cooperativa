@@ -181,7 +181,28 @@ if not ufs_disponiveis:
     with tab_consumidor:
         _exibir_consumidor()
 
-    st.caption("Fontes: CGU/CEIS, CGU/CNEP, PNCP, Consumidor.gov.br")
+    st.markdown("---")
+    with st.expander("Sobre os dados"):
+        st.markdown("""
+**Fontes dos dados:**
+- CGU — Cadastro de Empresas Inidôneas e Suspensas (CEIS) e Cadastro Nacional de Empresas Punidas (CNEP)
+- PNCP — Portal Nacional de Contratações Públicas
+- Consumidor.gov.br — Plataforma de reclamações de consumidores
+
+**APIs utilizadas:**
+- Portal da Transparência / CGU (requer chave de API gratuita)
+- PNCP API (acesso público)
+- dados.gov.br CKAN API (Consumidor.gov.br)
+
+**Principais métricas:**
+- Sanções (CEIS/CNEP): empresas sancionadas e punidas
+- Contratos públicos (PNCP): valor e quantidade de contratos
+- Reclamações de consumidor: ranking de empresas, índice de solução
+
+**Periodicidade:** Cache incremental (re-consulta após 30 dias)
+
+**Atualização do dashboard:** Manual via `scripts/buscar_compliance.py`.
+""")
     st.stop()
 
 # === Sidebar ===
@@ -395,8 +416,27 @@ with tab_consulta:
 
 # === Rodape ===
 st.markdown("---")
-atualizado = resumo_uf.get("atualizado_em", "N/A")
-st.caption(
-    f"Fontes: CGU/CEIS, CGU/CNEP, PNCP, Consumidor.gov.br | "
-    f"Ultima atualizacao: {atualizado}"
-)
+with st.expander("Sobre os dados"):
+    atualizado = resumo_uf.get("atualizado_em", "N/A")
+    st.markdown(f"""
+**Fontes dos dados:**
+- CGU — Cadastro de Empresas Inidôneas e Suspensas (CEIS) e Cadastro Nacional de Empresas Punidas (CNEP)
+- PNCP — Portal Nacional de Contratações Públicas
+- Consumidor.gov.br — Plataforma de reclamações de consumidores
+
+**APIs utilizadas:**
+- Portal da Transparência / CGU (requer chave de API gratuita)
+- PNCP API (acesso público)
+- dados.gov.br CKAN API (Consumidor.gov.br)
+
+**Principais métricas:**
+- Sanções (CEIS/CNEP): empresas sancionadas e punidas
+- Contratos públicos (PNCP): valor e quantidade de contratos
+- Reclamações de consumidor: ranking de empresas, índice de solução
+
+**Periodicidade:** Cache incremental (re-consulta após 30 dias)
+
+**Última atualização dos dados:** {atualizado}
+
+**Atualização do dashboard:** Manual via `scripts/buscar_compliance.py`.
+""")

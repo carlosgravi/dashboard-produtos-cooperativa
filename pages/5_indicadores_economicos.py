@@ -120,4 +120,20 @@ with tab4:
         st.info("Dados do Dólar não disponíveis.")
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - Sistema Gerenciador de Séries Temporais (SGS)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — SGS (Sistema Gerenciador de Séries Temporais)
+
+**API utilizada:** SGS/BCB — Séries 4189 (Selic meta), 4391 (CDI), 433 (IPCA), 189 (IGP-M), 1 (Dólar PTAX venda)
+
+**Principais métricas:**
+- Taxa Selic meta (% a.a.)
+- CDI (% a.a.)
+- IPCA mensal e acumulado 12 meses
+- IGP-M mensal
+- Cotação do Dólar PTAX venda (R$)
+
+**Periodicidade:** Diária (Selic, CDI, Dólar) / Mensal (IPCA, IGP-M)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

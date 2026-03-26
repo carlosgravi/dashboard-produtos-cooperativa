@@ -127,4 +127,18 @@ if not df_info.empty:
     )
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatórios 1 e 5)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — IF.data (Sistema de Informações de Instituições Financeiras)
+
+**API utilizada:** OLINDA/BCB — Relatórios 1 (Resumo) e 5 (Informações de Capital)
+
+**Principais métricas:**
+- Ativo Total, Patrimônio Líquido, Operações de Crédito, Depósitos Totais
+- Capital Social, Índice de Basileia
+- Evolução trimestral (últimos 12 trimestres)
+
+**Periodicidade:** Trimestral (último trimestre disponível)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

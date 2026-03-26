@@ -203,4 +203,18 @@ with st.expander("Ver ranking completo"):
     )
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatório 1 - Todas as Cooperativas)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — IF.data (Sistema de Informações de Instituições Financeiras)
+
+**API utilizada:** OLINDA/BCB — Relatório 1 (Resumo), filtro TipoInstituicao=3 (todas as cooperativas singulares)
+
+**Principais métricas:**
+- Ranking de cooperativas por Ativo Total
+- Posição da Transpocred no ranking nacional
+- Média e mediana do setor cooperativista
+
+**Periodicidade:** Trimestral (último trimestre disponível)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

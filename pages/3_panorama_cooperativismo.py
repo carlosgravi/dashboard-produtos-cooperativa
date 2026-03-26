@@ -114,4 +114,19 @@ if not df_dep_pf.empty:
     st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - SGS (Séries 24869, 25517, 25518, 25519, 25509, 25510)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — SGS (Sistema Gerenciador de Séries Temporais)
+
+**API utilizada:** SGS/BCB — Séries 24869, 25509, 25510, 25517, 25518, 25519
+
+**Principais métricas:**
+- Quantidade de cooperativas de crédito em funcionamento
+- Saldo de crédito PF e PJ em cooperativas (R$ milhões)
+- Depósitos à vista PF em cooperativas
+- Cooperativas centrais vs singulares
+
+**Periodicidade:** Anual (séries históricas até 2018-2022)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

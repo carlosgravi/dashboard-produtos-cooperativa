@@ -255,4 +255,19 @@ with tab_inadimplencia:
             st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - IF.data (Relatórios 3, 4, 11, 13)")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — IF.data (Sistema de Informações de Instituições Financeiras)
+
+**API utilizada:** OLINDA/BCB — Relatórios 3 (Passivo), 4 (DRE), 11 (Crédito PF) e 13 (Crédito PJ)
+
+**Principais métricas:**
+- Depósitos (à vista, a prazo, poupança) e composição da captação
+- Receitas e Despesas de Intermediação, Sobras/Perdas (DRE)
+- Crédito PF e PJ por modalidade
+- Inadimplência: operações vencidas há mais de 15 dias (PF e PJ)
+
+**Periodicidade:** Trimestral (último trimestre disponível)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")

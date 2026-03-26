@@ -148,4 +148,18 @@ else:
         st.error("Não foi possível carregar dados de cooperativas de nenhuma fonte.")
 
 st.markdown("---")
-st.caption("Fonte: Banco Central do Brasil - BcBase v2 / Cadastro de Cooperativas")
+with st.expander("Sobre os dados"):
+    st.markdown("""
+**Fonte dos dados:** Banco Central do Brasil — BcBase v2 / Cadastro de Cooperativas
+
+**API utilizada:** OLINDA/BCB — BcBase v2, endpoint `/Cooperativas`
+
+**Principais métricas:**
+- Distribuição geográfica de cooperativas de crédito por UF
+- Filtros por classe, tipo e categoria da cooperativa
+- Quantidade de UFs com presença de cooperativas
+
+**Periodicidade:** Trimestral (última data-base disponível)
+
+**Atualização do dashboard:** Semanal (GitHub Actions) ou manual via `scripts/atualizar_dados.py`.
+""")
