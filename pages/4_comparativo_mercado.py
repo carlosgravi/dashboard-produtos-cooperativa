@@ -88,11 +88,11 @@ if posicao_transp is not None:
 if valor_transp is not None:
     kpis.append({
         "label": f"Ativo Total {TRANSPOCRED_NOME}",
-        "valor": formatar_bilhoes(valor_transp * 1000),
+        "valor": formatar_bilhoes(valor_transp ),
     })
 kpis.append({
     "label": "Média do Setor",
-    "valor": formatar_bilhoes(media_ativo * 1000),
+    "valor": formatar_bilhoes(media_ativo ),
     "help": "Média de Ativo Total entre cooperativas",
 })
 
@@ -151,11 +151,11 @@ fig.add_trace(go.Bar(
     x=df_top20["Label"],
     y=df_top20["Valor"],
     marker_color=cores_barras,
-    text=[formatar_bilhoes(v * 1000) for v in df_top20["Valor"]],
+    text=[formatar_bilhoes(v ) for v in df_top20["Valor"]],
     textposition="outside",
 ))
 layout = dict(LAYOUT_PADRAO)
-layout["title"] = dict(text="Top 20 Cooperativas - Ativo Total (R$ mil)", x=0.5)
+layout["title"] = dict(text="Top 20 Cooperativas - Ativo Total (R$)", x=0.5)
 layout["height"] = 500
 layout["xaxis"] = dict(tickangle=-45)
 fig.update_layout(**layout)
@@ -179,11 +179,11 @@ if valor_transp is not None:
             "Média do Setor": CORES["azul"],
             "Mediana do Setor": CORES["laranja"],
         },
-        text=[formatar_bilhoes(v * 1000) for v in df_comp["Valor"]],
+        text=[formatar_bilhoes(v ) for v in df_comp["Valor"]],
     )
     fig_comp.update_traces(textposition="outside")
     fig_comp.update_layout(**{**LAYOUT_PADRAO, "height": 400, "showlegend": False})
-    fig_comp.update_layout(title=dict(text="Ativo Total - Comparativo (R$ mil)", x=0.5))
+    fig_comp.update_layout(title=dict(text="Ativo Total - Comparativo (R$)", x=0.5))
     st.plotly_chart(fig_comp, use_container_width=True)
 
 # === Tabela completa (expansível) ===
@@ -196,7 +196,7 @@ with st.expander("Ver ranking completo"):
     colunas_exibir.append("Valor")
 
     st.dataframe(
-        df_ranking[colunas_exibir].rename(columns={"Valor": "Ativo Total (R$ mil)"}),
+        df_ranking[colunas_exibir].rename(columns={"Valor": "Ativo Total (R$)"}),
         use_container_width=True,
         hide_index=True,
         height=400,

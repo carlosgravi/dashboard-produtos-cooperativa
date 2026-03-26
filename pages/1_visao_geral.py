@@ -40,25 +40,25 @@ kpis = []
 if ativo_total is not None:
     kpis.append({
         "label": "Ativo Total",
-        "valor": formatar_bilhoes(ativo_total * 1000),
+        "valor": formatar_bilhoes(ativo_total ),
         "help": "Ativo total da cooperativa (IF.data)",
     })
 if patrimonio_liq is not None:
     kpis.append({
         "label": "Patrimônio Líquido",
-        "valor": formatar_bilhoes(patrimonio_liq * 1000),
+        "valor": formatar_bilhoes(patrimonio_liq ),
         "help": "Patrimônio líquido da cooperativa",
     })
 if op_credito is not None:
     kpis.append({
         "label": "Operações de Crédito",
-        "valor": formatar_bilhoes(op_credito * 1000),
+        "valor": formatar_bilhoes(op_credito ),
         "help": "Saldo de operações de crédito",
     })
 if depositos is not None:
     kpis.append({
         "label": "Depósitos Totais",
-        "valor": formatar_bilhoes(depositos * 1000),
+        "valor": formatar_bilhoes(depositos ),
         "help": "Total de depósitos captados",
     })
 
@@ -95,7 +95,7 @@ if not df_evolucao.empty:
         )
         fig = grafico_barras(
             df_ativo, x="Trimestre", y="Valor",
-            titulo="Evolução do Ativo Total (R$ mil)",
+            titulo="Evolução do Ativo Total (R$)",
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -110,7 +110,7 @@ if not df_evolucao.empty:
         )
         fig = grafico_barras(
             df_pl, x="Trimestre", y="Valor",
-            titulo="Evolução do Patrimônio Líquido (R$ mil)",
+            titulo="Evolução do Patrimônio Líquido (R$)",
         )
         st.plotly_chart(fig, use_container_width=True)
 else:

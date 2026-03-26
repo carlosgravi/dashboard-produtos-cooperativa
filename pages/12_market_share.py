@@ -342,7 +342,7 @@ with tab2:
                     hovertemplate="<b>" + metrica + "</b><br>Trimestre: %{x}<br>Valor: %{customdata}<extra></extra>",
                 ))
             layout_evo = dict(LAYOUT_PADRAO)
-            layout_evo["title"] = dict(text=f"Evolução {TRANSPOCRED_NOME} (R$ mil)", x=0.5)
+            layout_evo["title"] = dict(text=f"Evolução {TRANSPOCRED_NOME} (R$)", x=0.5)
             layout_evo["height"] = 450
             layout_evo["yaxis"] = dict(tickformat=",")
             layout_evo["xaxis"] = dict(

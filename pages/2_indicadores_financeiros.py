@@ -55,7 +55,7 @@ with tab_credito:
         if not df_cred_pf.empty:
             total_pf = extrair_valor(df_cred_pf, "Total da Carteira")
             if total_pf is not None:
-                st.metric("Total Crédito PF", formatar_bilhoes(total_pf * 1000))
+                st.metric("Total Crédito PF", formatar_bilhoes(total_pf ))
 
             # Mostrar totais por modalidade (Grupo)
             df_mod_pf = df_cred_pf[df_cred_pf["NomeConta"] == "Total"].copy()
@@ -68,7 +68,7 @@ with tab_credito:
                 fig = grafico_barras(
                     df_mod_pf.sort_values("Valor", ascending=False),
                     x="NomeConta", y="Valor",
-                    titulo="Crédito PF por Modalidade (R$ mil)",
+                    titulo="Crédito PF por Modalidade (R$)",
                     cor=CORES["verde_ailos"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -80,7 +80,7 @@ with tab_credito:
         if not df_cred_pj.empty:
             total_pj = extrair_valor(df_cred_pj, "Total da Carteira")
             if total_pj is not None:
-                st.metric("Total Crédito PJ", formatar_bilhoes(total_pj * 1000))
+                st.metric("Total Crédito PJ", formatar_bilhoes(total_pj ))
 
             # Mostrar totais por modalidade (Grupo)
             df_mod_pj = df_cred_pj[df_cred_pj["NomeConta"] == "Total"].copy()
@@ -93,7 +93,7 @@ with tab_credito:
                 fig = grafico_barras(
                     df_mod_pj.sort_values("Valor", ascending=False),
                     x="NomeConta", y="Valor",
-                    titulo="Crédito PJ por Modalidade (R$ mil)",
+                    titulo="Crédito PJ por Modalidade (R$)",
                     cor=CORES["azul"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -114,11 +114,11 @@ with tab_captacao:
 
         kpis_cap = []
         if dep_vista is not None:
-            kpis_cap.append({"label": "Depósitos à Vista", "valor": formatar_bilhoes(dep_vista * 1000)})
+            kpis_cap.append({"label": "Depósitos à Vista", "valor": formatar_bilhoes(dep_vista )})
         if dep_prazo is not None:
-            kpis_cap.append({"label": "Depósitos a Prazo", "valor": formatar_bilhoes(dep_prazo * 1000)})
+            kpis_cap.append({"label": "Depósitos a Prazo", "valor": formatar_bilhoes(dep_prazo )})
         if dep_poupanca is not None:
-            kpis_cap.append({"label": "Poupança", "valor": formatar_bilhoes(dep_poupanca * 1000)})
+            kpis_cap.append({"label": "Poupança", "valor": formatar_bilhoes(dep_poupanca )})
         if kpis_cap:
             kpi_row(kpis_cap)
 
@@ -161,13 +161,13 @@ with tab_resultado:
         if resultado_liq is not None:
             kpis_dre.append({
                 "label": "Sobras/Perdas",
-                "valor": formatar_bilhoes(resultado_liq * 1000),
+                "valor": formatar_bilhoes(resultado_liq ),
                 "delta_color": "normal" if resultado_liq and resultado_liq > 0 else "inverse",
             })
         if receitas is not None:
-            kpis_dre.append({"label": "Receitas de Intermediação", "valor": formatar_bilhoes(receitas * 1000)})
+            kpis_dre.append({"label": "Receitas de Intermediação", "valor": formatar_bilhoes(receitas )})
         if despesas is not None:
-            kpis_dre.append({"label": "Despesas de Intermediação", "valor": formatar_bilhoes(abs(despesas) * 1000 if despesas else 0)})
+            kpis_dre.append({"label": "Despesas de Intermediação", "valor": formatar_bilhoes(abs(despesas) if despesas else 0)})
         if kpis_dre:
             kpi_row(kpis_dre)
 
@@ -175,7 +175,7 @@ with tab_resultado:
         df_dre_view = extrair_contas(df_dre)
         if not df_dre_view.empty:
             st.dataframe(
-                df_dre_view.rename(columns={"NomeConta": "Conta", "Valor": "Valor (R$ mil)"}),
+                df_dre_view.rename(columns={"NomeConta": "Conta", "Valor": "Valor (R$)"}),
                 use_container_width=True,
                 hide_index=True,
             )
@@ -249,7 +249,7 @@ with tab_inadimplencia:
         if not df_pf_view.empty:
             fig = grafico_barras(
                 df_pf_view, x="NomeConta", y="Valor",
-                titulo="Carteira de Crédito PF por Prazo (R$ mil)",
+                titulo="Carteira de Crédito PF por Prazo (R$)",
                 cor=CORES["verde_ailos"],
             )
             st.plotly_chart(fig, use_container_width=True)
