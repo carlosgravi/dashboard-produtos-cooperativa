@@ -31,9 +31,9 @@ def extrair_valor(df, nome_conta):
     return None
 
 ativo_total = extrair_valor(df_resumo, "Ativo Total") if not df_resumo.empty else None
-patrimonio_liq = extrair_valor(df_resumo, "Patrimonio Liquido") if not df_resumo.empty else None
-depositos = extrair_valor(df_resumo, "Deposito Total") if not df_resumo.empty else None
-op_credito = extrair_valor(df_resumo, "Operacoes de Credito") if not df_resumo.empty else None
+patrimonio_liq = extrair_valor(df_resumo, "nio L") if not df_resumo.empty else None
+depositos = extrair_valor(df_resumo, "Capta") if not df_resumo.empty else None
+op_credito = extrair_valor(df_resumo, "Carteira de Cr") if not df_resumo.empty else None
 
 # === KPI Cards ===
 kpis = []
@@ -101,7 +101,7 @@ if not df_evolucao.empty:
 
     # Filtrar PL
     df_pl = df_evolucao[
-        df_evolucao["NomeConta"].str.contains("Patrimonio Liquido", case=False, na=False)
+        df_evolucao["NomeConta"].str.contains("nio L", case=False, na=False)
     ].copy()
     if not df_pl.empty:
         df_pl = df_pl.sort_values("DataBase")

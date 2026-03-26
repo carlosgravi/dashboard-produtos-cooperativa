@@ -108,9 +108,9 @@ with tab_captacao:
 
     if not df_captacao.empty:
         # KPIs de captação
-        dep_vista = extrair_valor(df_captacao, "Depositos a Vista")
-        dep_prazo = extrair_valor(df_captacao, "Depositos a Prazo")
-        dep_poupanca = extrair_valor(df_captacao, "Depositos de Poupanca")
+        dep_vista = extrair_valor(df_captacao, "sitos à Vista") or extrair_valor(df_captacao, "sitos a Vista")
+        dep_prazo = extrair_valor(df_captacao, "sitos a Prazo")
+        dep_poupanca = extrair_valor(df_captacao, "Poupan")
 
         kpis_cap = []
         if dep_vista is not None:
@@ -153,21 +153,21 @@ with tab_resultado:
     df_dre = buscar_ifdata_transpocred(IFDATA_RELATORIOS["DRE"])
 
     if not df_dre.empty:
-        resultado_liq = extrair_valor(df_dre, "Sobras ou Perdas")
-        receitas = extrair_valor(df_dre, "Receitas de Intermediacao")
-        despesas = extrair_valor(df_dre, "Despesas de Intermediacao")
+        resultado_liq = extrair_valor(df_dre, "Lucro L") or extrair_valor(df_dre, "Sobras")
+        receitas = extrair_valor(df_dre, "Rendas de Opera") or extrair_valor(df_dre, "Receitas de Intermedia")
+        despesas = extrair_valor(df_dre, "Despesas de Capta") or extrair_valor(df_dre, "Despesas de Intermedia")
 
         kpis_dre = []
         if resultado_liq is not None:
             kpis_dre.append({
-                "label": "Sobras/Perdas",
-                "valor": formatar_bilhoes(resultado_liq ),
+                "label": "Resultado Líquido",
+                "valor": formatar_bilhoes(resultado_liq),
                 "delta_color": "normal" if resultado_liq and resultado_liq > 0 else "inverse",
             })
         if receitas is not None:
-            kpis_dre.append({"label": "Receitas de Intermediação", "valor": formatar_bilhoes(receitas )})
+            kpis_dre.append({"label": "Rendas de Crédito", "valor": formatar_bilhoes(receitas)})
         if despesas is not None:
-            kpis_dre.append({"label": "Despesas de Intermediação", "valor": formatar_bilhoes(abs(despesas) if despesas else 0)})
+            kpis_dre.append({"label": "Despesas de Captação", "valor": formatar_bilhoes(abs(despesas) if despesas else 0)})
         if kpis_dre:
             kpi_row(kpis_dre)
 
