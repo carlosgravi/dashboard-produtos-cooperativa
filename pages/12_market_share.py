@@ -171,12 +171,20 @@ with tab1:
                 "Valor": list(top10["Valor"]) + ([outras_valor] if outras_valor > 0 else []),
             })
 
+            # Criar coluna formatada para hover
+            df_pizza["Valor_Fmt"] = df_pizza["Valor"].apply(lambda v: formatar_bilhoes(v * 1000))
+
             fig_pizza = px.pie(
                 df_pizza, values="Valor", names="Nome",
                 color_discrete_sequence=PALETA_SEQUENCIAL,
                 hole=0.4,
             )
-            fig_pizza.update_traces(textposition="inside", textinfo="percent")
+            fig_pizza.update_traces(
+                textposition="inside",
+                textinfo="percent",
+                hovertemplate="<b>%{label}</b><br>%{percent}<br>%{customdata[0]}<extra></extra>",
+                customdata=df_pizza[["Valor_Fmt"]].values,
+            )
             layout_pizza = dict(LAYOUT_PADRAO)
             layout_pizza["height"] = 450
             layout_pizza["title"] = dict(text="Top 10 Cooperativas + Outras — Ativo Total", x=0.5)
@@ -318,6 +326,7 @@ with tab2:
             metricas_disponiveis = [m for m in METRICAS if m in df_trend.columns]
             fig_evo = go.Figure()
             for i, metrica in enumerate(metricas_disponiveis):
+                valores_fmt = [formatar_bilhoes(v * 1000) for v in df_trend[metrica]]
                 fig_evo.add_trace(go.Scatter(
                     x=df_trend["DataBase"],
                     y=df_trend[metrica],
@@ -325,7 +334,8 @@ with tab2:
                     name=metrica,
                     line=dict(color=PALETA_SEQUENCIAL[i % len(PALETA_SEQUENCIAL)], width=2),
                     marker=dict(size=5),
-                    hovertemplate="%{x}<br>" + metrica + ": %{y:,.0f} mil<extra></extra>",
+                    customdata=valores_fmt,
+                    hovertemplate="<b>" + metrica + "</b><br>Trimestre: %{x}<br>Valor: %{customdata}<extra></extra>",
                 ))
             layout_evo = dict(LAYOUT_PADRAO)
             layout_evo["title"] = dict(text=f"Evolução {TRANSPOCRED_NOME} (R$ mil)", x=0.5)
@@ -353,6 +363,7 @@ with tab2:
                         CORES["verde_ailos"] if v >= 0 else CORES["vermelho"]
                         for v in df_cresc_plot["Crescimento (%)"]
                     ]
+                    valores_cresc_fmt = [formatar_bilhoes(v * 1000) for v in df_cresc_plot[metrica_sel]]
                     fig_cresc = go.Figure()
                     fig_cresc.add_trace(go.Bar(
                         x=df_cresc_plot["DataBase"],
@@ -360,6 +371,8 @@ with tab2:
                         marker_color=cores_cresc,
                         text=[f"{v:+.1f}%" for v in df_cresc_plot["Crescimento (%)"]],
                         textposition="outside",
+                        customdata=valores_cresc_fmt,
+                        hovertemplate="<b>%{x}</b><br>Crescimento: %{y:+.2f}%<br>Valor: %{customdata}<extra></extra>",
                     ))
                     layout_cresc = dict(LAYOUT_PADRAO)
                     layout_cresc["title"] = dict(
@@ -386,6 +399,10 @@ with tab2:
             if indicadores:
                 fig_ind = go.Figure()
                 for i, ind in enumerate(indicadores):
+                    if "Alavancagem" in ind:
+                        hover_fmt = "<b>%{x}</b><br>Alavancagem: %{y:.2f}x<extra></extra>"
+                    else:
+                        hover_fmt = "<b>%{x}</b><br>Eficiência: %{y:.1%}<extra></extra>"
                     fig_ind.add_trace(go.Scatter(
                         x=df_trend["DataBase"],
                         y=df_trend[ind],
@@ -396,6 +413,7 @@ with tab2:
                             width=2,
                         ),
                         marker=dict(size=5),
+                        hovertemplate=hover_fmt,
                     ))
                 layout_ind = dict(LAYOUT_PADRAO)
                 layout_ind["title"] = dict(text="Alavancagem e Eficiência", x=0.5)
@@ -491,6 +509,10 @@ with tab3:
                 # === Gráfico: Share % ao longo dos trimestres ===
                 st.subheader(f"Evolução do Market Share — {metrica_hist}")
 
+                share_custom = list(zip(
+                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Valor Transpocred"]],
+                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Total Mercado"]],
+                ))
                 fig_share = go.Figure()
                 fig_share.add_trace(go.Scatter(
                     x=df_evo_share["Trimestre"],
@@ -501,6 +523,14 @@ with tab3:
                     marker=dict(size=8),
                     text=[f"{v:.2f}%" for v in df_evo_share["Share (%)"]],
                     textposition="top center",
+                    customdata=share_custom,
+                    hovertemplate=(
+                        "<b>Trimestre: %{x}</b><br>"
+                        "Share: %{y:.2f}%<br>"
+                        "Transpocred: %{customdata[0]}<br>"
+                        "Total Mercado: %{customdata[1]}"
+                        "<extra></extra>"
+                    ),
                 ))
                 layout_share = dict(LAYOUT_PADRAO)
                 layout_share["title"] = dict(
@@ -514,6 +544,10 @@ with tab3:
                 # === Gráfico: Posição no ranking ===
                 st.subheader(f"Posição no Ranking — {metrica_hist}")
 
+                pos_custom = list(zip(
+                    df_evo_share["Nº Cooperativas"].astype(int),
+                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Valor Transpocred"]],
+                ))
                 fig_pos = go.Figure()
                 fig_pos.add_trace(go.Scatter(
                     x=df_evo_share["Trimestre"],
@@ -524,6 +558,13 @@ with tab3:
                     marker=dict(size=8),
                     text=[f"{int(v)}º" for v in df_evo_share["Posição"]],
                     textposition="top center",
+                    customdata=pos_custom,
+                    hovertemplate=(
+                        "<b>Trimestre: %{x}</b><br>"
+                        "Posição: %{y}º de %{customdata[0]}<br>"
+                        "Valor: %{customdata[1]}"
+                        "<extra></extra>"
+                    ),
                 ))
                 layout_pos = dict(LAYOUT_PADRAO)
                 layout_pos["title"] = dict(
@@ -567,6 +608,8 @@ with tab3:
                         "": [TRANSPOCRED_NOME, "Mercado Total"],
                         "Crescimento (%)": [cresc_t, cresc_m],
                     })
+                    df_comp["De"] = [formatar_bilhoes(v_ini_t * 1000), formatar_bilhoes(v_ini_m * 1000)]
+                    df_comp["Para"] = [formatar_bilhoes(v_fin_t * 1000), formatar_bilhoes(v_fin_m * 1000)]
                     fig_comp = px.bar(
                         df_comp, x="", y="Crescimento (%)",
                         color="",
@@ -575,8 +618,18 @@ with tab3:
                             "Mercado Total": CORES["azul"],
                         },
                         text=[f"{v:+.1f}%" for v in df_comp["Crescimento (%)"]],
+                        custom_data=["De", "Para"],
                     )
-                    fig_comp.update_traces(textposition="outside")
+                    fig_comp.update_traces(
+                        textposition="outside",
+                        hovertemplate=(
+                            "<b>%{x}</b><br>"
+                            "Crescimento: %{y:+.1f}%<br>"
+                            "De: %{customdata[0]}<br>"
+                            "Para: %{customdata[1]}"
+                            "<extra></extra>"
+                        ),
+                    )
                     layout_comp = dict(LAYOUT_PADRAO)
                     layout_comp["title"] = dict(
                         text=f"Crescimento no Período — {metrica_hist}", x=0.5,
