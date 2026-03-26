@@ -5,7 +5,13 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-from src.api.bcb import buscar_ifdata_valores, buscar_ifdata_evolucao, carregar_ranking_historico
+from src.api.bcb import buscar_ifdata_valores, buscar_ifdata_evolucao
+
+try:
+    from src.api.bcb import carregar_ranking_historico
+except ImportError:
+    def carregar_ranking_historico():
+        return None
 from src.utils.constants import (
     TRANSPOCRED_CNPJ_8, TRANSPOCRED_NOME, IFDATA_RELATORIOS,
     CORES, PALETA_SEQUENCIAL, LAYOUT_PADRAO,
