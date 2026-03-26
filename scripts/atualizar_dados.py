@@ -1,8 +1,11 @@
 """Script para buscar dados das APIs e salvar como cache local em data/.
 
 Roda localmente (python scripts/atualizar_dados.py) ou via GitHub Actions.
+Flags opcionais:
+  --ranking-historico  Busca ranking de todas as cooperativas para os últimos 8 trimestres (~40 min)
 """
 
+import argparse
 import json
 import os
 import urllib.parse
@@ -523,10 +526,84 @@ def buscar_e_salvar_anp():
 
 
 # ============================================================
+# 8. IF.data Ranking Histórico (todas as cooperativas, múltiplos trimestres)
+# ============================================================
+
+def buscar_e_salvar_ifdata_ranking_historico():
+    """Busca relatório 1 de todas as cooperativas para os últimos 8 trimestres.
+
+    Cada trimestre leva ~5 min (API pesada). Total estimado: ~40 min.
+    Salva em data/bcb/ifdata_ranking_historico.json com coluna DataBase.
+    """
+    print("\n=== IF.data Ranking Histórico (8 trimestres) ===")
+    print("  AVISO: Isso pode levar ~40 minutos!")
+    datas = _get_ifdata_datas_base()[:8]
+    print(f"  Trimestres: {', '.join(datas)}")
+
+    # Buscar cadastro de cooperativas (usar o trimestre mais recente)
+    data_base_cadastro = _encontrar_data_base_disponivel(cnpj_8=TRANSPOCRED_CNPJ_8)
+    print(f"  Buscando cadastro (data-base: {data_base_cadastro})...")
+    mapa_nomes = _buscar_cadastro_cooperativas(data_base_cadastro)
+    coop_codigos = set(mapa_nomes.keys())
+    print(f"  Cooperativas no cadastro: {len(coop_codigos)}")
+
+    frames = []
+    for i, dt in enumerate(datas, 1):
+        print(f"  [{i}/{len(datas)}] Buscando trimestre {dt}...")
+        try:
+            url = (
+                f"{IFDATA_BASE}/IfDataValores(AnoMes=@AnoMes,TipoInstituicao=@TipoInstituicao,"
+                f"Relatorio=@Relatorio)"
+                f"?@AnoMes={dt}&@TipoInstituicao=3"
+                f"&@Relatorio=%271%27"
+                f"&$format=json&$top=100000"
+            )
+            resp = requests.get(url, timeout=600)
+            resp.raise_for_status()
+            registros = resp.json().get("value", [])
+
+            # Filtrar cooperativas
+            registros_coops = []
+            for r in registros:
+                if r.get("CodInst") in coop_codigos:
+                    r["NomeInstituicao"] = mapa_nomes[r["CodInst"]]
+                    r["DataBase"] = dt
+                    registros_coops.append(r)
+
+            if registros_coops:
+                df = pd.DataFrame(registros_coops)
+                if "Saldo" in df.columns:
+                    df["Valor"] = pd.to_numeric(df["Saldo"], errors="coerce")
+                if "NomeConta" not in df.columns and "NomeColuna" in df.columns:
+                    df["NomeConta"] = df["NomeColuna"]
+                frames.append(df)
+                print(f"  [OK] {dt}: {len(registros_coops)} registros de cooperativas")
+            else:
+                print(f"  [VAZIO] {dt}")
+        except Exception as e:
+            print(f"  [ERRO] {dt}: {e}")
+
+    if frames:
+        df_all = pd.concat(frames, ignore_index=True)
+        _salvar_json("bcb", "ifdata_ranking_historico.json", df_all.to_dict(orient="records"))
+        print(f"  Total: {len(df_all)} registros em {len(frames)} trimestres")
+    else:
+        print("  [VAZIO] Nenhum dado de ranking histórico obtido")
+
+
+# ============================================================
 # Main
 # ============================================================
 
 def main():
+    parser = argparse.ArgumentParser(description="Atualiza cache de dados das APIs públicas.")
+    parser.add_argument(
+        "--ranking-historico",
+        action="store_true",
+        help="Buscar ranking histórico de todas as cooperativas (8 trimestres, ~40 min)",
+    )
+    args = parser.parse_args()
+
     print(f"=== Atualização de dados - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
     print(f"Diretório de dados: {os.path.abspath(DATA_DIR)}")
 
@@ -537,6 +614,9 @@ def main():
     buscar_e_salvar_sedes()
     buscar_e_salvar_antt()
     buscar_e_salvar_anp()
+
+    if args.ranking_historico:
+        buscar_e_salvar_ifdata_ranking_historico()
 
     print(f"\n=== Concluído - {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
 

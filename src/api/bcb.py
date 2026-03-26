@@ -343,6 +343,24 @@ def buscar_sedes_cooperativas():
 
 
 @st.cache_data(ttl=86400)
+def carregar_ranking_historico():
+    """Carrega ranking histórico de todas as cooperativas (múltiplos trimestres).
+
+    Dados pré-coletados em data/bcb/ifdata_ranking_historico.json via:
+        python scripts/atualizar_dados.py --ranking-historico
+
+    Returns:
+        DataFrame com dados de todas as cooperativas em múltiplos trimestres, ou None se cache não existe.
+    """
+    cache = _carregar_cache("bcb", "ifdata_ranking_historico.json")
+    if cache is not None and isinstance(cache, pd.DataFrame) and not cache.empty:
+        if "Valor" not in cache.columns and "Saldo" in cache.columns:
+            cache["Valor"] = pd.to_numeric(cache["Saldo"], errors="coerce")
+        return cache
+    return None
+
+
+@st.cache_data(ttl=86400)
 def buscar_instituicoes_funcionamento(tipo_instituicao=None):
     """Busca instituições em funcionamento no BCB."""
     url = (

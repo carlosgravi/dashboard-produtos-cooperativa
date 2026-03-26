@@ -116,8 +116,20 @@ st.markdown("""
 | **Atualização** | Manual via `scripts/buscar_compliance.py` |
 """)
 
+# === Market Share e Tendências ===
+st.subheader("11. Market Share e Tendências")
+st.markdown("""
+| Item | Detalhe |
+|------|---------|
+| **Fonte** | Banco Central do Brasil — IF.data |
+| **API** | OLINDA/BCB — Relatório 1 (Resumo), filtro `TipoInstituicao=3` (cooperativas individuais) |
+| **Métricas** | Market share (Ativo, Crédito, Captação, PL), CAGR anualizado, crescimento trimestral, alavancagem (Ativo/PL), eficiência (Crédito/Captação), concentração Top N |
+| **Periodicidade** | Trimestral (snapshot e evolução) / Histórico sob demanda |
+| **Atualização** | Snapshot e evolução: semanal (GitHub Actions). Ranking histórico: manual via `scripts/atualizar_dados.py --ranking-historico` (~40 min) |
+""")
+
 # === Diretório de Empresas ===
-st.subheader("10. Diretório de Empresas")
+st.subheader("12. Diretório de Empresas")
 st.markdown("""
 | Item | Detalhe |
 |------|---------|
@@ -134,7 +146,7 @@ st.markdown("""
 ```
 dashboard-produtos-cooperativa/
 |-- app.py                    # Entry point (st.navigation)
-|-- pages/                    # Páginas do dashboard (1 a 11)
+|-- pages/                    # Páginas do dashboard (1 a 12)
 |-- src/
 |   |-- api/                  # Camada de acesso a dados
 |   |   |-- bcb.py            # BCB: SGS, IF.data, BcBase

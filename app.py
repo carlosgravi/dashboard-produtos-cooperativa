@@ -19,6 +19,7 @@ paginas = {
         st.Page("pages/3_panorama_cooperativismo.py", title="Panorama Cooperativismo", icon="🏦"),
         st.Page("pages/4_comparativo_mercado.py", title="Comparativo de Mercado", icon="🏆"),
         st.Page("pages/5_indicadores_economicos.py", title="Indicadores Econômicos", icon="📉"),
+        st.Page("pages/12_market_share.py", title="Market Share", icon="📈"),
     ],
     "Setor": [
         st.Page("pages/6_setor_transportes.py", title="Setor de Transportes", icon="🚛"),
