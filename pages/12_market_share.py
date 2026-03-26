@@ -114,7 +114,7 @@ with tab1:
                 kpis_share.append({
                     "label": f"Share {nome_metrica}",
                     "valor": formatar_percentual(share),
-                    "help": f"{formatar_bilhoes(valor_t * 1000)} de {formatar_bilhoes(total_mercado * 1000)}",
+                    "help": f"{formatar_bilhoes(valor_t)} de {formatar_bilhoes(total_mercado)}",
                 })
 
         if kpis_share:
@@ -172,7 +172,7 @@ with tab1:
             })
 
             # Criar coluna formatada para hover
-            df_pizza["Valor_Fmt"] = df_pizza["Valor"].apply(lambda v: formatar_bilhoes(v * 1000))
+            df_pizza["Valor_Fmt"] = df_pizza["Valor"].apply(lambda v: formatar_bilhoes(v))
 
             fig_pizza = px.pie(
                 df_pizza, values="Valor", names="Nome",
@@ -218,7 +218,7 @@ with tab1:
                 posicoes.append({
                     "Métrica": nome_metrica,
                     "Posição": f"{df_m.loc[idx, 'Posição']}º",
-                    "Valor": formatar_bilhoes(df_m.loc[idx, "Valor"] * 1000),
+                    "Valor": formatar_bilhoes(df_m.loc[idx, "Valor"]),
                     "Total Cooperativas": formatar_numero(len(df_m)),
                     "Share (%)": formatar_percentual(shares.get(nome_metrica, 0)),
                 })
@@ -330,7 +330,7 @@ with tab2:
             metricas_disponiveis = [m for m in METRICAS if m in df_trend.columns]
             fig_evo = go.Figure()
             for i, metrica in enumerate(metricas_disponiveis):
-                valores_fmt = [formatar_bilhoes(v * 1000) for v in df_trend[metrica]]
+                valores_fmt = [formatar_bilhoes(v) for v in df_trend[metrica]]
                 fig_evo.add_trace(go.Scatter(
                     x=df_trend["Periodo"],
                     y=df_trend[metrica],
@@ -372,7 +372,7 @@ with tab2:
                         CORES["verde_ailos"] if v >= 0 else CORES["vermelho"]
                         for v in df_cresc_plot["Crescimento (%)"]
                     ]
-                    valores_cresc_fmt = [formatar_bilhoes(v * 1000) for v in df_cresc_plot[metrica_sel]]
+                    valores_cresc_fmt = [formatar_bilhoes(v) for v in df_cresc_plot[metrica_sel]]
                     fig_cresc = go.Figure()
                     fig_cresc.add_trace(go.Bar(
                         x=df_cresc_plot["Periodo"],
@@ -519,8 +519,8 @@ with tab3:
                 st.subheader(f"Evolução do Market Share — {metrica_hist}")
 
                 share_custom = list(zip(
-                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Valor Transpocred"]],
-                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Total Mercado"]],
+                    [formatar_bilhoes(v) for v in df_evo_share["Valor Transpocred"]],
+                    [formatar_bilhoes(v) for v in df_evo_share["Total Mercado"]],
                 ))
                 fig_share = go.Figure()
                 fig_share.add_trace(go.Scatter(
@@ -555,7 +555,7 @@ with tab3:
 
                 pos_custom = list(zip(
                     df_evo_share["Nº Cooperativas"].astype(int),
-                    [formatar_bilhoes(v * 1000) for v in df_evo_share["Valor Transpocred"]],
+                    [formatar_bilhoes(v) for v in df_evo_share["Valor Transpocred"]],
                 ))
                 fig_pos = go.Figure()
                 fig_pos.add_trace(go.Scatter(
@@ -603,13 +603,13 @@ with tab3:
                         st.metric(
                             f"Crescimento {TRANSPOCRED_NOME}",
                             formatar_percentual(cresc_t, 1),
-                            help=f"De {formatar_bilhoes(v_ini_t * 1000)} para {formatar_bilhoes(v_fin_t * 1000)}",
+                            help=f"De {formatar_bilhoes(v_ini_t)} para {formatar_bilhoes(v_fin_t)}",
                         )
                     with col2:
                         st.metric(
                             "Crescimento Total do Mercado",
                             formatar_percentual(cresc_m, 1),
-                            help=f"De {formatar_bilhoes(v_ini_m * 1000)} para {formatar_bilhoes(v_fin_m * 1000)}",
+                            help=f"De {formatar_bilhoes(v_ini_m)} para {formatar_bilhoes(v_fin_m)}",
                         )
 
                     # Gráfico de barras comparativo
@@ -617,8 +617,8 @@ with tab3:
                         "": [TRANSPOCRED_NOME, "Mercado Total"],
                         "Crescimento (%)": [cresc_t, cresc_m],
                     })
-                    df_comp["De"] = [formatar_bilhoes(v_ini_t * 1000), formatar_bilhoes(v_ini_m * 1000)]
-                    df_comp["Para"] = [formatar_bilhoes(v_fin_t * 1000), formatar_bilhoes(v_fin_m * 1000)]
+                    df_comp["De"] = [formatar_bilhoes(v_ini_t), formatar_bilhoes(v_ini_m)]
+                    df_comp["Para"] = [formatar_bilhoes(v_fin_t), formatar_bilhoes(v_fin_m)]
                     fig_comp = px.bar(
                         df_comp, x="", y="Crescimento (%)",
                         color="",
@@ -655,10 +655,10 @@ with tab3:
                         lambda v: formatar_percentual(v)
                     )
                     df_exibir["Valor Transpocred"] = df_exibir["Valor Transpocred"].apply(
-                        lambda v: formatar_bilhoes(v * 1000)
+                        lambda v: formatar_bilhoes(v)
                     )
                     df_exibir["Total Mercado"] = df_exibir["Total Mercado"].apply(
-                        lambda v: formatar_bilhoes(v * 1000)
+                        lambda v: formatar_bilhoes(v)
                     )
                     df_exibir["Posição"] = df_exibir["Posição"].apply(lambda v: f"{int(v)}º")
                     st.dataframe(df_exibir, use_container_width=True, hide_index=True)
