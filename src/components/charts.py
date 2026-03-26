@@ -6,6 +6,7 @@ import streamlit as st
 import requests
 
 from src.utils.constants import CORES, PALETA_SEQUENCIAL, LAYOUT_PADRAO, GEOJSON_BRASIL_URL
+from src.utils.formatting import formatar_bilhoes
 
 
 def _aplicar_layout(fig, titulo=None, altura=400):
@@ -18,19 +19,25 @@ def _aplicar_layout(fig, titulo=None, altura=400):
     return fig
 
 
-def grafico_linha(df, x, y, titulo=None, cor=None, altura=400, formato_y=None):
+def grafico_linha(df, x, y, titulo=None, cor=None, altura=400, formato_y=None, monetario=True):
     """Grafico de linha simples."""
     fig = px.line(
         df, x=x, y=y,
         color_discrete_sequence=[cor or CORES["teal"]],
     )
     fig.update_traces(line=dict(width=2.5))
+    if monetario and not df.empty:
+        valores_fmt = [formatar_bilhoes(v) for v in df[y]]
+        fig.update_traces(
+            customdata=valores_fmt,
+            hovertemplate="<b>%{x}</b><br>%{customdata}<extra></extra>",
+        )
     if formato_y:
         fig.update_yaxes(tickformat=formato_y)
     return _aplicar_layout(fig, titulo, altura)
 
 
-def grafico_linhas_multiplas(df, x, y_cols, nomes=None, titulo=None, altura=400, formato_y=None):
+def grafico_linhas_multiplas(df, x, y_cols, nomes=None, titulo=None, altura=400, formato_y=None, monetario=True):
     """Grafico com multiplas linhas."""
     fig = go.Figure()
     cores = PALETA_SEQUENCIAL
@@ -38,20 +45,26 @@ def grafico_linhas_multiplas(df, x, y_cols, nomes=None, titulo=None, altura=400,
     for i, col in enumerate(y_cols):
         if col not in df.columns:
             continue
-        fig.add_trace(go.Scatter(
+        trace_kwargs = dict(
             x=df[x],
             y=df[col],
             mode="lines+markers",
             name=nomes[i] if i < len(nomes) else col,
             line=dict(color=cores[i % len(cores)], width=2),
             marker=dict(size=4),
-        ))
+        )
+        if monetario:
+            nome_trace = nomes[i] if i < len(nomes) else col
+            valores_fmt = [formatar_bilhoes(v) for v in df[col]]
+            trace_kwargs["customdata"] = valores_fmt
+            trace_kwargs["hovertemplate"] = f"<b>{nome_trace}</b><br>%{{x}}: %{{customdata}}<extra></extra>"
+        fig.add_trace(go.Scatter(**trace_kwargs))
     if formato_y:
         fig.update_yaxes(tickformat=formato_y)
     return _aplicar_layout(fig, titulo, altura)
 
 
-def grafico_barras(df, x, y, titulo=None, cor=None, horizontal=False, altura=400, formato_valores=None, texto=None):
+def grafico_barras(df, x, y, titulo=None, cor=None, horizontal=False, altura=400, formato_valores=None, texto=None, monetario=True):
     """Grafico de barras."""
     if horizontal:
         fig = px.bar(
@@ -67,6 +80,13 @@ def grafico_barras(df, x, y, titulo=None, cor=None, horizontal=False, altura=400
         )
     if texto:
         fig.update_traces(textposition="outside")
+    if monetario and not df.empty:
+        col_valor = y if not horizontal else y
+        valores_fmt = [formatar_bilhoes(v) for v in df[col_valor]]
+        fig.update_traces(
+            customdata=valores_fmt,
+            hovertemplate="<b>%{label}</b><br>%{customdata}<extra></extra>",
+        )
     return _aplicar_layout(fig, titulo, altura)
 
 
@@ -79,18 +99,23 @@ def grafico_barras_agrupadas(df, x, y, cor, titulo=None, altura=400):
     return _aplicar_layout(fig, titulo, altura)
 
 
-def grafico_pizza(df, valores, nomes, titulo=None, altura=400):
+def grafico_pizza(df, valores, nomes, titulo=None, altura=400, monetario=True):
     """Gráfico de pizza/donut."""
     fig = px.pie(
         df, values=valores, names=nomes,
         color_discrete_sequence=PALETA_SEQUENCIAL,
         hole=0.4,
     )
-    fig.update_traces(
+    trace_kwargs = dict(
         textposition="outside",
         textinfo="percent+label",
         pull=[0.02] * len(df),
     )
+    if monetario and not df.empty:
+        valores_fmt = [formatar_bilhoes(v) for v in df[valores]]
+        trace_kwargs["customdata"] = valores_fmt
+        trace_kwargs["hovertemplate"] = "<b>%{label}</b><br>%{percent}<br>%{customdata}<extra></extra>"
+    fig.update_traces(**trace_kwargs)
     return _aplicar_layout(fig, titulo, altura)
 
 

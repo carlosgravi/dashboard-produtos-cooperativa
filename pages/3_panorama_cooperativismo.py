@@ -61,7 +61,7 @@ with col1:
         fig = grafico_linha(
             df_qtd, x="data", y="valor",
             titulo="Evolução da Quantidade de Cooperativas",
-            cor=CORES["teal"],
+            cor=CORES["teal"], monetario=False,
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -77,7 +77,7 @@ with col2:
         ).sort_values("data")
         fig = grafico_linhas_multiplas(
             df_tipo, x="data", y_cols=["Centrais", "Singulares"],
-            titulo="Cooperativas Centrais vs Singulares",
+            titulo="Cooperativas Centrais vs Singulares", monetario=False,
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -91,7 +91,7 @@ with col3:
         fig = grafico_linha(
             df_cred_pf, x="data", y="valor",
             titulo="Crédito PF - Cooperativas (R$ milhões)",
-            cor=CORES["azul"],
+            cor=CORES["azul"], monetario=False,
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -100,7 +100,7 @@ with col4:
         fig = grafico_linha(
             df_cred_pj, x="data", y="valor",
             titulo="Crédito PJ - Cooperativas (R$ milhões)",
-            cor=CORES["laranja"],
+            cor=CORES["laranja"], monetario=False,
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -109,7 +109,7 @@ if not df_dep_pf.empty:
     fig = grafico_linha(
         df_dep_pf, x="data", y="valor",
         titulo="Depósitos à Vista PF (R$ milhões)",
-        cor=CORES["teal_escuro"],
+        cor=CORES["teal_escuro"], monetario=False,
     )
     st.plotly_chart(fig, use_container_width=True)
 

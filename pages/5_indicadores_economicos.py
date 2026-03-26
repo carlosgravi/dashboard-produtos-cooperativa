@@ -66,11 +66,11 @@ with tab1:
             df_juros, x="data", y_cols=["Selic", "CDI"],
             nomes=["Selic (meta)", "CDI"],
             titulo="Evolução Selic e CDI (% a.a.)",
-            formato_y=",.2f",
+            formato_y=",.2f", monetario=False,
         )
         st.plotly_chart(fig, use_container_width=True)
     elif not df_selic.empty:
-        fig = grafico_linha(df_selic, x="data", y="valor", titulo="Evolução da Selic (% a.a.)")
+        fig = grafico_linha(df_selic, x="data", y="valor", titulo="Evolução da Selic (% a.a.)", monetario=False)
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Dados de Selic/CDI não disponíveis.")
@@ -80,7 +80,7 @@ with tab2:
         fig_ipca = grafico_barras(
             df_ipca, x="data", y="valor",
             titulo="IPCA Mensal (%)",
-            cor=CORES["azul"],
+            cor=CORES["azul"], monetario=False,
         )
         st.plotly_chart(fig_ipca, use_container_width=True)
 
@@ -91,7 +91,7 @@ with tab2:
             df_ipca_ac.dropna(subset=["acumulado_12m"]),
             x="data", y="acumulado_12m",
             titulo="IPCA Acumulado 12 Meses (%)",
-            cor=CORES["vermelho"],
+            cor=CORES["vermelho"], monetario=False,
         )
         st.plotly_chart(fig_ac, use_container_width=True)
     else:
@@ -102,7 +102,7 @@ with tab3:
         fig_igpm = grafico_linha(
             df_igpm, x="data", y="valor",
             titulo="IGP-M Mensal (%)",
-            cor=CORES["laranja"],
+            cor=CORES["laranja"], monetario=False,
         )
         st.plotly_chart(fig_igpm, use_container_width=True)
     else:

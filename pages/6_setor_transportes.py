@@ -52,7 +52,7 @@ with tab_veiculos:
                 fig = grafico_barras(
                     df_uf.head(10), x=col_uf, y="Total_Veiculos",
                     titulo="Top 10 UFs por Quantidade de Veículos",
-                    cor=CORES["teal"],
+                    cor=CORES["teal"], monetario=False,
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -62,7 +62,7 @@ with tab_veiculos:
             if not df_tipo.empty:
                 fig = grafico_pizza(
                     df_tipo.head(8), valores="Total", nomes="Tipo_Veiculo",
-                    titulo="Distribuição por Tipo de Veículo",
+                    titulo="Distribuição por Tipo de Veículo", monetario=False,
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -72,7 +72,7 @@ with tab_veiculos:
             fig = grafico_barras(
                 df_idade, x="Faixa_Idade", y="Quantidade",
                 titulo="Idade da Frota",
-                cor=CORES["azul"],
+                cor=CORES["azul"], monetario=False,
             )
             st.plotly_chart(fig, use_container_width=True)
     else:
@@ -95,7 +95,7 @@ with tab_transportadores:
             with col1:
                 fig = grafico_pizza(
                     df_cat, valores="Quantidade", nomes="Categoria",
-                    titulo="Transportadores por Categoria",
+                    titulo="Transportadores por Categoria", monetario=False,
                 )
                 st.plotly_chart(fig, use_container_width=True)
             with col2:

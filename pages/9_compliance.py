@@ -310,7 +310,7 @@ with tab_sancoes:
         col_g1, col_g2 = st.columns(2)
         with col_g1:
             df_por_tipo = df_sancoes.groupby("tipo").size().reset_index(name="total")
-            fig = grafico_pizza(df_por_tipo, "total", "tipo", titulo="Sancoes por Cadastro")
+            fig = grafico_pizza(df_por_tipo, "total", "tipo", titulo="Sancoes por Cadastro", monetario=False)
             st.plotly_chart(fig, use_container_width=True)
 
         with col_g2:
@@ -322,7 +322,7 @@ with tab_sancoes:
                 fig = grafico_barras(
                     df_por_orgao, "orgao", "total",
                     titulo="Top Orgaos Sancionadores",
-                    horizontal=True, altura=400,
+                    horizontal=True, altura=400, monetario=False,
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
