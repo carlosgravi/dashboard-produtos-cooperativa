@@ -195,8 +195,10 @@ with st.expander("Ver ranking completo"):
         colunas_exibir.append(col_cod)
     colunas_exibir.append("Valor")
 
+    df_ranking_fmt = df_ranking[colunas_exibir].copy()
+    df_ranking_fmt["Valor"] = df_ranking_fmt["Valor"].apply(formatar_bilhoes)
     st.dataframe(
-        df_ranking[colunas_exibir].rename(columns={"Valor": "Ativo Total (R$)"}),
+        df_ranking_fmt.rename(columns={"Valor": "Ativo Total (R$)"}),
         use_container_width=True,
         hide_index=True,
         height=400,

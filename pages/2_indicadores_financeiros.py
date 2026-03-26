@@ -174,8 +174,10 @@ with tab_resultado:
         # Tabela DRE
         df_dre_view = extrair_contas(df_dre)
         if not df_dre_view.empty:
+            df_dre_fmt = df_dre_view.copy()
+            df_dre_fmt["Valor"] = df_dre_fmt["Valor"].apply(formatar_bilhoes)
             st.dataframe(
-                df_dre_view.rename(columns={"NomeConta": "Conta", "Valor": "Valor (R$)"}),
+                df_dre_fmt.rename(columns={"NomeConta": "Conta", "Valor": "Valor (R$)"}),
                 use_container_width=True,
                 hide_index=True,
             )
