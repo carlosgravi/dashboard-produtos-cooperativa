@@ -341,6 +341,11 @@ with tab2:
             layout_evo["title"] = dict(text=f"Evolução {TRANSPOCRED_NOME} (R$ mil)", x=0.5)
             layout_evo["height"] = 450
             layout_evo["yaxis"] = dict(tickformat=",")
+            layout_evo["xaxis"] = dict(
+                type="category",
+                categoryorder="array",
+                categoryarray=list(df_trend["DataBase"]),
+            )
             fig_evo.update_layout(**layout_evo)
             st.plotly_chart(fig_evo, use_container_width=True)
 
